@@ -139,10 +139,11 @@ user"
 (defun hyde/open-post-maybe (pos)
   (interactive "d")
   (let (
-	(post-name (thing-at-point 'line))
-	)
-  (find-file 
-   (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-name)))))
+	(post-file-name (nth 
+			 1
+			 (split-string (strip-string (thing-at-point 'line)) " : "))))
+    (find-file 
+     (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-file-name)))))
 
 ;; Keymaps
 (defvar hyde-mode-map
