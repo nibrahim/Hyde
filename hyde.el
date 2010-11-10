@@ -18,6 +18,9 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ;; 02111-1307, USA.
 
+;; Requirements
+(require 'hyde-git)
+
 ;; Constants for internal use
 (defconst hyde/hyde-version "0.1" 
   "Hyde version")
@@ -59,6 +62,21 @@
    )
   "Font lock keywords for Hyde mode")
 
+;; Version control abstraction
+(defalias 'hyde/vc-uncommittedp 'hyde/git/uncommittedp "Command to check whether a file has uncommitted changes")
+(defalias 'hyde/vc-unpushedp 'hyde/git/unpushedp "Command to check whether a file has unpushed changes")
+(defalias 'hyde/vc-pushedp  'hyde/git/pushedp "Command to check whether a file has unpushed changes")
+
+(defun hyde/hyde-file-local-uncommitted-changed (file)
+  (hyde/vc-uncommittedp (concat hyde-home "/" hyde-posts-dir) file))
+
+(defun hyde/hyde-file-committed-not-pushed (file)
+  (hyde/vc-unpushedp (concat hyde-home "/" hyde-posts-dir) file))
+
+(defun hyde/hyde-file-committed-pushed (file)
+  (hyde/vc-pushedp (concat hyde-home "/" hyde-posts-dir) file))
+
+
 ;; Utility functions
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
@@ -67,16 +85,20 @@
   ;; Insert posts
   (save-excursion
     (let (
-	  (posts (split-string (shell-command-to-string
-				(concat "cd " hyde-home "/" hyde-posts-dir " ; " hyde/hyde-list-posts-command )) "\n")))
+	  (posts (hyde/list-format-posts))
+	  )
       (dolist (post posts)
 	(insert (concat post "\n"))))
     ;; Insert footer
     (insert (concat ":: Hyde version " hyde/hyde-version "\n"))))
 
-;; (defun hyde/open-post-maybe (pos)
-  
-  
+(defun hyde/open-post-maybe (pos)
+  (interactive "d")
+  (let (
+	(post-name (thing-at-point 'line))
+	)
+  (find-file 
+   (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-name)))))
 
 ;; Keymaps
 (defvar hyde-mode-map
@@ -84,7 +106,7 @@
       ((hyde-mode-map (make-sparse-keymap)))
     (define-key hyde-mode-map (kbd "n") 'next-line)
     (define-key hyde-mode-map (kbd "p") 'previous-line)
-    (define-key hyde-mode-map (kbd "C-j") 'hyde/open-post-maybe)
+    (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
 
@@ -112,4 +134,3 @@
 (provide 'hyde)
 
 
-(local-set-key "n" 'self-insert-command)
