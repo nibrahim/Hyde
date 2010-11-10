@@ -46,6 +46,14 @@
   "/bin/ls -1tr "
   "Command to list the posts")
 
+(defcustom hyde/jekyll-command
+  "rvm use 1.9.1 && jekyll"
+  "Command to run jekyll to create the blog")
+
+(defcustom hyde/deploy-command
+  "rsync -vr _site/* nkv@ssh.hcoop.net:/afs/hcoop.net/user/n/nk/nkv/public_html/nibrahim.net.in/"
+  "Command used to deploy the site to the actual server")
+
 ;; Faces and font-locking
 (defface hyde-header-face
   '(
@@ -107,6 +115,9 @@
 (defalias 'hyde/vc-uncommittedp 'hyde/git/uncommittedp "Command to check whether a file has uncommitted changes")
 (defalias 'hyde/vc-unpushedp 'hyde/git/unpushedp "Command to check whether a file has unpushed changes")
 (defalias 'hyde/vc-pushedp  'hyde/git/pushedp "Command to check whether a file has unpushed changes")
+(defalias 'hyde/vc-add  'hyde/git/add "Command to add a file to the DVCS")
+(defalias 'hyde/vc-commit  'hyde/git/commit "Command to add a file to the DVCS")
+(defalias 'hyde/vc-push  'hyde/git/push "Command to push the repository")
 
 (defun hyde/hyde-file-local-uncommitted-changed (file)
   (hyde/vc-uncommittedp (concat hyde-home "/" hyde-posts-dir) file))
@@ -117,7 +128,35 @@
 (defun hyde/hyde-file-committed-pushed (file)
   (hyde/vc-pushedp (concat hyde-home "/" hyde-posts-dir) file))
 
+(defun hyde/hyde-add-file (file)
+  (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
+(defun hyde/hyde-commit-post (p commit-message)
+  (interactive "d\nMCommit message : ")
+  (let (
+	(post-file-name (nth 
+			 1
+			 (split-string (strip-string (thing-at-point 'line)) " : "))))
+    (hyde/vc-commit 
+     (concat hyde-home "/" hyde-posts-dir)
+     post-file-name 
+     commit-message)
+    (hyde/load-posts)))
+
+(defun hyde/hyde-push ()
+  (interactive)
+  (hyde/vc-push hyde-home)
+  (hyde/load-posts))
+
+(defun hyde/run-jekyll ()
+  (interactive)
+  (shell-command (format "cd %s && %s" hyde-home hyde/jekyll-command)))
+
+(defun hyde/deploy ()
+  (interactive)
+  (shell-command (format "cd %s && %s" hyde-home hyde/deploy-command)))
+  
+  
 ;; Utility functions
 (defun hyde/hyde-file-local-unsaved-changed (file)
   "Returns true if and only if the given file contains unsaved changes"
@@ -187,6 +226,7 @@ user"
     (insert (format "title: \"%s\"\n" title))
     (insert "---\n\n")
     (save-buffer)
+    (hyde/hyde-add-file post-file-name)
     (hyde-markdown-mode)))
 
 ;; Keymaps
@@ -194,12 +234,18 @@ user"
   (let 
       ((hyde-mode-map (make-sparse-keymap)))
     (define-key hyde-mode-map (kbd "n") 'hyde/new-post)
+    (define-key hyde-mode-map (kbd "g") 'hyde/load-posts)
+    (define-key hyde-mode-map (kbd "c") 'hyde/hyde-commit-post)
+    (define-key hyde-mode-map (kbd "p") 'hyde/hyde-push)
+    (define-key hyde-mode-map (kbd "j") 'hyde/run-jekyll)
+    (define-key hyde-mode-map (kbd "d") 'hyde/deploy)
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
 
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
+  (interactive)
   ;; Clear the buffer
   (toggle-read-only -1)
   (delete-region (point-min) (point-max))
@@ -212,8 +258,9 @@ user"
       (dolist (post posts)
 	(insert (concat post "\n"))))
     ;; Insert footer
-    (insert (concat ":: Hyde version " hyde/hyde-version "\n")))
-  (toggle-read-only 1))
+    (insert (concat ":: Hyde version " hyde/hyde-version "\n"))
+    (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
+    (toggle-read-only 1)))
 
 (defun hyde/hyde-mode ()
   "The Hyde major mode to edit Jekyll posts."

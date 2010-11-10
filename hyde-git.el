@@ -38,4 +38,26 @@
   "Returns true if there are no uncommitted changes in the file"
   (not (hyde/git/uncommittedp repo file)))
 
+(defun hyde/git/add (repo file)
+  "Adds the given file to the repository"
+  (let ((cmd (format "cd '%s' && git add '%s'" repo file)))
+    (shell-command cmd)))
+
+(defun hyde/git/commit (repo file commit-message)
+  "Commits the given file to the repository"
+  (let ((cmd (format "cd '%s' && git commit -m '%s' '%s'" repo commit-message file)))
+    (shell-command cmd)))
+
+(defun hyde/git/push (repo)
+  "Pushes the repository"
+  (let ((cmd (format "cd '%s' && git push origin master" repo)))
+    (shell-command cmd)))
+
+
+
+
+
+
+
+
 (provide 'hyde-git)
