@@ -21,8 +21,12 @@
 (defun hyde-markdown-post-save ()
   "Functions called after saving to update the hyde buffers"
   (interactive)
-  (message "Hello, we're done!"))
+  (message "Hello")
+  nil)
+
 
 (define-derived-mode hyde-markdown-mode  markdown-mode "Hyde-markdown" 
   "Markdown mode with a few extra bindings for convenience" 
-  (add-hook 'write-file-functions 'hyde-markdown-post-save))
+  (add-hook 'write-contents-functions 'hyde-markdown-post-save nil t))
+
+(provide 'hyde-md)

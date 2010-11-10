@@ -20,6 +20,7 @@
 
 ;; Requirements
 (require 'hyde-git)
+(require 'hyde-md)
 
 ;; Constants for internal use
 (defconst hyde/hyde-version "0.1" 
@@ -143,7 +144,8 @@ user"
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : "))))
     (find-file 
-     (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-file-name)))))
+     (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-file-name)))
+    (hyde-markdown-mode)))
 
 ;; Keymaps
 (defvar hyde-mode-map
