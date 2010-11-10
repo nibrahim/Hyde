@@ -49,17 +49,57 @@
 ;; Faces and font-locking
 (defface hyde-header-face
   '(
-    (((type tty) (class color)) (:foreground "blue" ))
-    (((type graphic) (class color)) (:foreground "blue" ))
-    (t (:foreground "blue" ))
+    (((type tty) (class color)) (:foreground "blue" :background "gray"))
+    (((type graphic) (class color)) (:foreground "blue" :background "gray"))
+    (t (:foreground "blue" :background "gray"))
     )
   "Face for a hyde header")
 
+(defface hyde-committed-face
+  '(
+    (((type tty) (class color)) (:foreground "blue"))
+    (((type graphic) (class color)) (:foreground "blue"))
+    (t (:foreground "blue"))
+    )
+  "Face for a file that has been committed")
+
+(defface hyde-modified-face
+  '(
+    (((type tty) (class color)) (:foreground "red"))
+    (((type graphic) (class color)) (:foreground "red"))
+    (t (:foreground "red"))
+    )
+  "Face for a file that has been modified but not committed")
+
+(defface hyde-unsaved-face
+  '(
+    (((type tty) (class color)) (:foreground "black" :background "red"))
+    (((type graphic) (class color)) (:foreground "black" :background "red"))
+    (t (:foreground "black" :background "red"))
+    )
+  "Face for a file that has been modified but not even saved")
+
+(defface hyde-pushed-face
+  '(
+    (((type tty) (class color)) (:foreground "green"))
+    (((type graphic) (class color)) (:foreground "green"))
+    (t (:foreground "green"))
+    )
+  "Face for a file that has been pushed to the remote repo")
+
 (defvar hyde-header-face 'hyde-header-face "Face for a hyde header")
+(defvar hyde-committed-face 'hyde-committed-face)
+(defvar hyde-modified-face 'hyde-modified-face)
+(defvar hyde-unsaved-face  'hyde-unsaved-face )
+(defvar hyde-pushed-face 'hyde-pushed-face)
 
 (defconst hyde-font-lock-keywords
   (list
    '("^::.*" . hyde-header-face)
+   '("^C :.*" . hyde-committed-face)
+   '("^M :.*" . hyde-modified-face)
+   '("^E :.*" . hyde-unsaved-face)
+   '("^\\. :.*" . hyde-pushed-face)
    )
   "Font lock keywords for Hyde mode")
 
@@ -96,15 +136,15 @@
   "Returns an letter indicating the status of the file as far as
 hyde is concerned
 
-   Committed means that the changes have been committed into your DVCS
-   Pushed out means that they have been pushed to a safe remote repo (github, bitbucket etc.)
+Committed means that the changes have been committed into your DVCS
+Pushed out means that they have been pushed to a safe remote repo (github, bitbucket etc.)
 
-   Status indicators are as follows:
+Status indicators are as follows:
 
-   . Committed and pushed
-   C Committed but not yet pushed
-   M Local saved changes (uncommitted)
-   E Local unsaved changes"
+. Committed and pushed
+C Committed but not yet pushed
+M Local saved changes (uncommitted)
+E Local unsaved changes"
   (or 
    (and (hyde/hyde-file-local-unsaved-changed file) "E")
    (and (hyde/hyde-file-local-uncommitted-changed file) "M")
@@ -123,19 +163,6 @@ user"
 
 
 
-(defun hyde/load-posts ()
-  "Load up the posts and present them to the user"
-  ;; Insert headers
-  (insert ":: Editing blog at:" hyde-home "\n")
-  ;; Insert posts
-  (save-excursion
-    (let (
-	  (posts (hyde/list-format-posts))
-	  )
-      (dolist (post posts)
-	(insert (concat post "\n"))))
-    ;; Insert footer
-    (insert (concat ":: Hyde version " hyde/hyde-version "\n"))))
 
 (defun hyde/open-post-maybe (pos)
   (interactive "d")
@@ -147,36 +174,64 @@ user"
      (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-file-name)))
     (hyde-markdown-mode)))
 
+(defun hyde/new-post (title)
+  (interactive "MEnter post title: ")
+  (let ((post-file-name (format "%s/%s/%s.markdown" 
+				hyde-home hyde-posts-dir (concat 
+							  (format-time-string "%Y-%m-%d-")
+							  (downcase (replace-regexp-in-string " " "_" title))))))
+
+    (find-file post-file-name)
+    (insert "---\n")
+    (insert "layout: post\n")
+    (insert (format "title: \"%s\"\n" title))
+    (insert "---\n\n")
+    (save-buffer)
+    (hyde-markdown-mode)))
+
 ;; Keymaps
 (defvar hyde-mode-map
   (let 
       ((hyde-mode-map (make-sparse-keymap)))
-    (define-key hyde-mode-map (kbd "n") 'next-line)
-    (define-key hyde-mode-map (kbd "p") 'previous-line)
+    (define-key hyde-mode-map (kbd "n") 'hyde/new-post)
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
 
-
+(defun hyde/load-posts ()
+  "Load up the posts and present them to the user"
+  ;; Clear the buffer
+  (toggle-read-only -1)
+  (delete-region (point-min) (point-max))
+  ;; Insert headers
+  (insert ":: Editing blog at:" hyde-home "\n")
+  ;; Insert posts
+  (save-excursion
+    (let 
+	((posts (hyde/list-format-posts)))
+      (dolist (post posts)
+	(insert (concat post "\n"))))
+    ;; Insert footer
+    (insert (concat ":: Hyde version " hyde/hyde-version "\n")))
+  (toggle-read-only 1))
 
 (defun hyde/hyde-mode ()
-  "The Hyde major mode to edit Jekyll posts. I love how that sounds :)"
+  "The Hyde major mode to edit Jekyll posts."
   (kill-all-local-variables)
   (use-local-map hyde-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(hyde-font-lock-keywords))
   (setq major-mode 'hyde/hyde-mode
 	  mode-name "Hyde")
-  (run-hooks hyde-mode-hook))
-
+  (run-hooks hyde-mode-hook)
+  (hl-line-mode t))
 
 ;; Entry point
 (defun hyde ()
   "Enters hyde mode"
   (interactive)
   (switch-to-buffer (get-buffer-create "*Hyde*"))
-  (hyde/hyde-mode)
   (hyde/load-posts)
-  (toggle-read-only 1))
+  (hyde/hyde-mode))
   
 (provide 'hyde)
 
