@@ -18,15 +18,18 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ;; 02111-1307, USA.
 
-(defun hyde-markdown-post-save ()
-  "Functions called after saving to update the hyde buffers"
+(defun hyde-markdown-end-edit ()
+  "Function called signifying the end of the editing session"
   (interactive)
-  (message "Hello")
+  (save-buffer (current-buffer))
+  (switch-to-buffer (get-buffer-create "*Hyde*"))
+  (hyde/load-posts)
   nil)
 
 
 (define-derived-mode hyde-markdown-mode  markdown-mode "Hyde-markdown" 
   "Markdown mode with a few extra bindings for convenience" 
-  (add-hook 'write-contents-functions 'hyde-markdown-post-save nil t))
+  (define-key hyde-markdown-mode-map (kbd "C-c C-c") 'hyde-markdown-end-edit))
 
 (provide 'hyde-md)
+
