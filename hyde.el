@@ -78,6 +78,50 @@
 
 
 ;; Utility functions
+(defun hyde/hyde-file-local-unsaved-changed (file)
+  "Returns true if and only if the given file contains unsaved changes"
+    (let (
+	(buffer (get-file-buffer file))
+	)
+    (if buffer
+	(buffer-modified-p buffer)
+      nil)))
+
+(defun strip-string (str)
+  "Returns STR with all trailing whitespaces gone"
+  (replace-regexp-in-string "\n$" "" str))
+
+(defun hyde/file-status (file)
+  "Returns an letter indicating the status of the file as far as
+hyde is concerned
+
+   Committed means that the changes have been committed into your DVCS
+   Pushed out means that they have been pushed to a safe remote repo (github, bitbucket etc.)
+
+   Status indicators are as follows:
+
+   . Committed and pushed
+   C Committed but not yet pushed
+   M Local saved changes (uncommitted)
+   E Local unsaved changes"
+  (or 
+   (and (hyde/hyde-file-local-unsaved-changed file) "E")
+   (and (hyde/hyde-file-local-uncommitted-changed file) "M")
+   (and (hyde/hyde-file-committed-not-pushed file) "C")
+   (and (hyde/hyde-file-committed-pushed file) ".")))
+
+
+(defun hyde/list-format-posts ()
+  "Gets the lists of posts from the posts directory, formats them
+properly and returns them so that they can be presented to the
+user"
+  (let (
+	(posts (split-string (strip-string (shell-command-to-string
+					    (concat "cd " hyde-home "/" hyde-posts-dir " ; " hyde/hyde-list-posts-command ))))))
+    (map 'list (lambda (f) (format "%s : %s" (hyde/file-status f) f)) posts)))
+
+
+
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
   ;; Insert headers
