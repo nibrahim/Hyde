@@ -51,6 +51,7 @@
 (defun hyde/git/push (repo)
   "Pushes the repository"
   (let ((cmd (format "cd '%s' && git push origin master" repo)))
+    (message (concat " **** Pushing " cmd))
     (shell-command cmd)))
 
 
