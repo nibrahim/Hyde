@@ -47,7 +47,7 @@
   "Command to list the posts")
 
 (defcustom hyde/jekyll-command
-  "rvm use 1.9.1 && jekyll"
+  "jekyll"
   "Command to run jekyll to create the blog")
 
 (defcustom hyde/deploy-command
