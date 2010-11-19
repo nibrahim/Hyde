@@ -239,6 +239,7 @@ user"
     (define-key hyde-mode-map (kbd "p") 'hyde/hyde-push)
     (define-key hyde-mode-map (kbd "j") 'hyde/run-jekyll)
     (define-key hyde-mode-map (kbd "d") 'hyde/deploy)
+    (define-key hyde-mode-map (kbd "q") '(lambda () (interactive) (kill-buffer (current-buffer))))
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
