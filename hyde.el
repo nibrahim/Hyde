@@ -42,6 +42,10 @@
   "_posts"
   "Directory which contains the list of posts")
 
+(defcustom hyde-drafts-dir
+  "_drafts"
+  "Directory which contains post drafts")
+
 (defcustom hyde/hyde-list-posts-command 
   "/bin/ls -1tr "
   "Command to list the posts")
@@ -114,33 +118,35 @@
 ;; Version control abstraction
 (defalias 'hyde/vc-uncommittedp 'hyde/git/uncommittedp "Command to check whether a file has uncommitted changes")
 (defalias 'hyde/vc-unpushedp 'hyde/git/unpushedp "Command to check whether a file has unpushed changes")
-(defalias 'hyde/vc-pushedp  'hyde/git/pushedp "Command to check whether a file has unpushed changes")
+(defalias 'hyde/vc-pushedp  'hyde/git/pushedp "Command to check whether a file has pushed changes")
 (defalias 'hyde/vc-add  'hyde/git/add "Command to add a file to the DVCS")
 (defalias 'hyde/vc-commit  'hyde/git/commit "Command to add a file to the DVCS")
 (defalias 'hyde/vc-push  'hyde/git/push "Command to push the repository")
+(defalias 'hyde/vc-rename  'hyde/git/rename "Command to push the repository")
 
-(defun hyde/hyde-file-local-uncommitted-changed (file)
-  (hyde/vc-uncommittedp (concat hyde-home "/" hyde-posts-dir) file))
+(defun hyde/hyde-file-local-uncommitted-changed (dir file)
+  (hyde/vc-uncommittedp (concat hyde-home "/" dir) file))
 
-(defun hyde/hyde-file-committed-not-pushed (file)
-  (hyde/vc-unpushedp (concat hyde-home "/" hyde-posts-dir) file))
+(defun hyde/hyde-file-committed-not-pushed (dir file)
+  (hyde/vc-unpushedp (concat hyde-home "/" dir) file))
 
-(defun hyde/hyde-file-committed-pushed (file)
-  (hyde/vc-pushedp (concat hyde-home "/" hyde-posts-dir) file))
+(defun hyde/hyde-file-committed-pushed (dir file)
+  (hyde/vc-pushedp (concat hyde-home "/" dir) file))
 
 (defun hyde/hyde-add-file (file)
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
-(defun hyde/hyde-commit-post (p commit-message)
+(defun hyde/hyde-rename-file (from to)
+  (hyde/vc-rename hyde-home from to))
+
+(defun hyde/hyde-commit-post (pos commit-message)
   (interactive "d\nMCommit message : ")
   (let (
 	(post-file-name (nth 
 			 1
-			 (split-string (strip-string (thing-at-point 'line)) " : "))))
-    (hyde/vc-commit 
-     (concat hyde-home "/" hyde-posts-dir)
-     post-file-name 
-     commit-message)
+			 (split-string (strip-string (thing-at-point 'line)) " : ")))
+	(dir (get-text-property pos 'dir)))
+    (hyde/vc-commit (concat hyde-home "/" dir) post-file-name commit-message)
     (hyde/load-posts)))
 
 (defun hyde/hyde-push ()
@@ -158,7 +164,7 @@
   
   
 ;; Utility functions
-(defun hyde/hyde-file-local-unsaved-changed (file)
+(defun hyde/hyde-file-local-unsaved-changed (dir file)
   "Returns true if and only if the given file contains unsaved changes"
     (let (
 	(buffer (get-file-buffer file))
@@ -171,7 +177,7 @@
   "Returns STR with all trailing whitespaces gone"
   (replace-regexp-in-string "\n$" "" str))
 
-(defun hyde/file-status (file)
+(defun hyde/file-status (dir file)
   "Returns an letter indicating the status of the file as far as
 hyde is concerned
 
@@ -185,22 +191,32 @@ C Committed but not yet pushed
 M Local saved changes (uncommitted)
 E Local unsaved changes"
   (or 
-   (and (hyde/hyde-file-local-unsaved-changed file) "E")
-   (and (hyde/hyde-file-local-uncommitted-changed file) "M")
-   (and (hyde/hyde-file-committed-not-pushed file) "C")
-   (and (hyde/hyde-file-committed-pushed file) ".")))
+   (and (hyde/hyde-file-local-unsaved-changed dir file) "E")
+   (and (hyde/hyde-file-local-uncommitted-changed dir file) "M")
+   (and (hyde/hyde-file-committed-not-pushed dir file) "C")
+   (and (hyde/hyde-file-committed-pushed dir file) ".")))
 
 
-(defun hyde/list-format-posts ()
-  "Gets the lists of posts from the posts directory, formats them
+(defun hyde/list-format-posts (dir)
+  "Gets the lists of posts from the given directory, formats them
 properly and returns them so that they can be presented to the
 user"
   (let (
 	(posts (split-string (strip-string (shell-command-to-string
-					    (concat "cd " hyde-home "/" hyde-posts-dir " ; " hyde/hyde-list-posts-command ))))))
-    (map 'list (lambda (f) (format "%s : %s" (hyde/file-status f) f)) posts)))
+					    (concat "cd " hyde-home "/" dir " ; " hyde/hyde-list-posts-command ))))))
+    (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
-
+(defun hyde/promote-to-post (pos)
+  (interactive "d")
+  (let (
+	(post-file-name (nth 
+			 1
+			 (split-string (strip-string (thing-at-point 'line)) " : ")))
+	(dir (get-text-property pos 'dir)))
+    (if (equal dir hyde-drafts-dir)
+	(hyde/hyde-rename-file (concat dir "/" post-file-name)
+			       (concat hyde-posts-dir "/" post-file-name)))
+    (hyde/load-posts)))
 
 
 (defun hyde/open-post-maybe (pos)
@@ -208,15 +224,16 @@ user"
   (let (
 	(post-file-name (nth 
 			 1
-			 (split-string (strip-string (thing-at-point 'line)) " : "))))
+			 (split-string (strip-string (thing-at-point 'line)) " : ")))
+	(dir (get-text-property pos 'dir)))
     (find-file 
-     (strip-string (concat hyde-home "/" hyde-posts-dir "/" post-file-name)))
+     (strip-string (concat hyde-home "/" dir "/" post-file-name)))
     (hyde-markdown-mode)))
 
 (defun hyde/new-post (title)
   (interactive "MEnter post title: ")
   (let ((post-file-name (format "%s/%s/%s.markdown" 
-				hyde-home hyde-posts-dir (concat 
+				hyde-home hyde-drafts-dir (concat 
 							  (format-time-string "%Y-%m-%d-")
 							  (downcase (replace-regexp-in-string " " "_" title))))))
 
@@ -236,13 +253,15 @@ user"
     (define-key hyde-mode-map (kbd "n") 'hyde/new-post)
     (define-key hyde-mode-map (kbd "g") 'hyde/load-posts)
     (define-key hyde-mode-map (kbd "c") 'hyde/hyde-commit-post)
-    (define-key hyde-mode-map (kbd "p") 'hyde/hyde-push)
+    (define-key hyde-mode-map (kbd "P") 'hyde/hyde-push)
     (define-key hyde-mode-map (kbd "j") 'hyde/run-jekyll)
     (define-key hyde-mode-map (kbd "d") 'hyde/deploy)
+    (define-key hyde-mode-map (kbd "p") 'hyde/promote-to-post)
     (define-key hyde-mode-map (kbd "q") '(lambda () (interactive) (kill-buffer (current-buffer))))
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
+
 
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
@@ -252,16 +271,29 @@ user"
   (delete-region (point-min) (point-max))
   ;; Insert headers
   (insert ":: Editing blog at:" hyde-home "\n")
-  ;; Insert posts
-  (save-excursion
+  (insert ":: Posts\n")
+  ;; Insert posts from posts directory
+  (let 
+      ((posts (hyde/list-format-posts hyde-posts-dir)))
+    (dolist (post posts)
+      (progn
+	(save-excursion
+	  (insert (concat post "\n")))
+	(put-text-property (point) (+ (point) (length post)) 'dir hyde-posts-dir)
+	(forward-line))))
+    (insert "\n:: Drafts\n")
     (let 
-	((posts (hyde/list-format-posts)))
+	((posts (hyde/list-format-posts hyde-drafts-dir)))
       (dolist (post posts)
-	(insert (concat post "\n"))))
+	(progn
+	  (save-excursion
+	    (insert (concat post "\n")))
+	  (put-text-property (point) (+ (point) (length post)) 'dir hyde-drafts-dir)
+	  (forward-line))))
     ;; Insert footer
-    (insert (concat ":: Hyde version " hyde/hyde-version "\n"))
+    (insert (concat "\n\n:: Hyde version " hyde/hyde-version "\n"))
     (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
-    (toggle-read-only 1)))
+    (toggle-read-only 1))
 
 (defun hyde/hyde-mode ()
   "The Hyde major mode to edit Jekyll posts."
