@@ -23,7 +23,7 @@
   (let (
 	(cmd (format "cd '%s' && git diff-files --quiet '%s' > /dev/null" repo file))
 	)
-    (message (concat " **** uncommittedp " cmd))
+    ;; (message (concat " **** uncommittedp " cmd))
     (= (shell-command cmd) 1)))
 
 (defun hyde/git/unpushedp (repo file)
@@ -31,7 +31,7 @@
   (let (
 	(cmd (format "cd '%s' && git log --exit-code origin/master..HEAD '%s' > /dev/null" repo file))
 	)
-    (message (concat " **** unpushedp " cmd))
+    ;; (message (concat " **** unpushedp " cmd))
     (= (shell-command cmd) 1)))
 
 (defun hyde/git/pushedp (repo file)
@@ -51,13 +51,13 @@
 (defun hyde/git/push (repo)
   "Pushes the repository"
   (let ((cmd (format "cd '%s' && git push origin master > /dev/null" repo)))
-    (message (concat " **** Pushing " cmd))
+    ;; (message (concat " **** Pushing " cmd))
     (shell-command cmd)))
 
 (defun hyde/git/rename (base from to)
   "Rename the file in BASE from FROM to TO"
   (let ((cmd (format "cd '%s' && git mv '%s' '%s' > /dev/null" base from to)))
-    (message (concat " **** Renaming " cmd))
+    ;; (message (concat " **** Renaming " cmd))
     (shell-command cmd)))
 
 
