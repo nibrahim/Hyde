@@ -22,7 +22,7 @@
   "Function called signifying the end of the editing session"
   (interactive)
   (save-buffer (current-buffer))
-  (switch-to-buffer (get-buffer-create "*Hyde*"))
+  (bury-buffer)
   (hyde/load-posts)
   nil)
 
@@ -31,5 +31,6 @@
   "Markdown mode with a few extra bindings for convenience" 
   (define-key hyde-markdown-mode-map (kbd "C-c C-c") 'hyde-markdown-end-edit))
   (define-key hyde-markdown-mode-map (kbd "C-c C-v") 'markdown-preview)
+
 (provide 'hyde-md)
 
