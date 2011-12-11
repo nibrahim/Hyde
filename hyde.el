@@ -148,21 +148,27 @@
 (defalias 'hyde/vc-rename  'hyde/git/rename "Command to push the repository")
 
 (defun hyde/hyde-file-local-uncommitted-changed (dir file)
+  "Return whether the given file in the given dir is uncommitted"
   (hyde/vc-uncommittedp (concat hyde-home "/" dir) file))
 
 (defun hyde/hyde-file-committed-not-pushed (dir file)
+  "Return whether the given file in the given dir is unpushed"
   (hyde/vc-unpushedp (concat hyde-home "/" dir) file))
 
 (defun hyde/hyde-file-committed-pushed (dir file)
+  "Return whether the given file in the given dir is pushed"
   (hyde/vc-pushedp (concat hyde-home "/" dir) file))
 
 (defun hyde/hyde-add-file (file)
+  "Stages the given file for commit."
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
 (defun hyde/hyde-rename-file (from to)
+  "Renames the given file from to to"
   (hyde/vc-rename hyde-home from to))
 
 (defun hyde/hyde-commit-post (pos commit-message)
+  "Commits the changes in the repository"
   (interactive "d\nMCommit message : ")
   (let (
 	(post-file-name (nth 
@@ -173,15 +179,18 @@
     (hyde/load-posts)))
 
 (defun hyde/hyde-push ()
+  "Publishes the changes to the remote repository"
   (interactive)
   (hyde/vc-push hyde-home)
   (hyde/load-posts))
 
 (defun hyde/run-jekyll ()
+  "Runs jekyll on the directory"
   (interactive)
   (shell-command (format "cd %s && %s" hyde-home hyde/jekyll-command)))
 
 (defun hyde/deploy ()
+  "Deploys the generated website (should be run after hyde/run-jekyll"
   (interactive)
   (shell-command (format "cd %s && %s" hyde-home hyde/deploy-command)))
   
@@ -230,6 +239,7 @@ user"
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
 (defun hyde/promote-to-post (pos)
+  "Promotes the post under the cursor from a draft to a post"
   (interactive "d")
   (let (
 	(post-file-name (nth 
@@ -243,6 +253,7 @@ user"
 
 
 (defun hyde/open-post-maybe (pos)
+  "Opens the post under cursor in the editor"
   (interactive "d")
   (let (
 	(post-file-name (nth 
@@ -254,6 +265,7 @@ user"
     (hyde-markdown-mode)))
 
 (defun hyde/new-post (title)
+  "Creates a new post"
   (interactive "MEnter post title: ")
   (let ((post-file-name (format "%s/%s/%s.markdown" 
 				hyde-home hyde-drafts-dir (concat 
@@ -270,8 +282,8 @@ user"
     (hyde-markdown-mode)))
 
 (defun hyde/quit ()
-  (interactive)
   "Quits hyde"
+  (interactive)
   (kill-buffer (current-buffer)))
 
 
@@ -368,7 +380,3 @@ user"
   (hyde/hyde-mode))
 
 (provide 'hyde)
-
-
-
-
