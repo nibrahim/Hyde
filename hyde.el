@@ -30,6 +30,10 @@
 (defvar hyde-mode-hook nil
   "Hook called by \"hyde-mode\"")
 
+(defcustom hyde-home 
+  "/home/noufal/blog"
+  "Default blog directory")
+
 (defcustom hyde-deploy-dir
   "_site"
   "Directory which needs to be deployed")
@@ -302,6 +306,7 @@ user"
   (let (
 	(config-file (concat hyde-home "/.hyde.el"))
 	)
+    (message (format "Loading %s" config-file))
     (load-file config-file)
     ))
   
@@ -309,27 +314,36 @@ user"
 (defun hyde/hyde-mode ()
   "The Hyde major mode to edit Jekyll posts."
   (kill-all-local-variables)
+  (dolist (x '(hyde-home
+	       hyde-deploy-dir
+	       hyde-posts-dir
+	       hyde-drafts-dir
+	       hyde/hyde-list-posts-command
+	       hyde/jekyll-command
+	       hyde/deploy-command
+	       hyde/git/remote
+	       hyde/git/remote-branch))
+    (make-variable-buffer-local x))
   (use-local-map hyde-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(hyde-font-lock-keywords))
   (setq major-mode 'hyde/hyde-mode
-	  mode-name "Hyde")
-  (run-hooks hyde-mode-hook)
-  (hl-line-mode t))
+	mode-name "Hyde")
+  (hyde/read-config)
+  (hyde/load-posts)
+  (hl-line-mode t)
+  (run-hooks hyde-mode-hook))
+
 
 ;; Entry point
 (defun hyde (hyde-home)
   "Enters hyde mode"
-  (interactive "DBlog :")
-  (dolist (x '(hyde-home hyde-deploy-dir hyde-posts-dir hyde-drafts-dir hyde/hyde-list-posts-command hyde/jekyll-command hyde/deploy-command))
-    (make-local-variable x))
+  (interactive "DBlog : ")
   (let (
 	(hyde-buffer (concat "*Hyde : " hyde-home "*"))
 	)
-    (switch-to-buffer (get-buffer-create hyde-buffer))
-    (hyde/read-config))
-  (hyde/load-posts)
+    (switch-to-buffer (get-buffer-create hyde-buffer)))
   (hyde/hyde-mode))
-  
+
 (provide 'hyde)
 
 
