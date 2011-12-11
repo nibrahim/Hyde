@@ -23,40 +23,57 @@
 (require 'hyde-md)
 
 ;; Constants for internal use
-(defconst hyde/hyde-version "0.1" 
+(defconst hyde/hyde-version "0.2" 
   "Hyde version")
 
 ;; Internal customisable variables
-(defvar hyde-mode-hook nil
-  "Hook called by \"hyde-mode\"")
+(defcustom hyde-mode-hook nil
+  "Hook called by \"hyde-mode\""
+  :type 'hook
+  :group 'hyde)
 
 (defcustom hyde-home 
   "/home/noufal/blog"
-  "Default blog directory")
+  "Default blog directory"
+  :type 'directory
+  :group 'hyde)
 
 (defcustom hyde-deploy-dir
   "_site"
-  "Directory which needs to be deployed")
+  "Directory which needs to be deployed"
+  :type 'string
+  :group 'hyde)
+
 
 (defcustom hyde-posts-dir 
   "_posts"
-  "Directory which contains the list of posts")
+  "Directory which contains the list of posts"
+  :type 'string
+  :group 'hyde)
 
 (defcustom hyde-drafts-dir
   "_drafts"
-  "Directory which contains post drafts")
+  "Directory which contains post drafts"
+  :type 'string
+  :group 'hyde)
 
 (defcustom hyde/hyde-list-posts-command 
   "/bin/ls -1tr "
-  "Command to list the posts")
+  "Command to list the posts"
+  :type 'string
+  :group 'hyde)
 
 (defcustom hyde/jekyll-command
   "jekyll"
-  "Command to run jekyll to create the blog")
+  "Command to run jekyll to create the blog"
+  :type 'string
+  :group 'hyde)
 
 (defcustom hyde/deploy-command
   "rsync -vr _site/* nkv@ssh.hcoop.net:/afs/hcoop.net/user/n/nk/nkv/public_html/nibrahim.net.in/"
-  "Command used to deploy the site to the actual server")
+  "Command used to deploy the site to the actual server"
+  :type 'string
+  :group 'hyde)
 
 ;; Faces and font-locking
 (defface hyde-header-face
@@ -65,7 +82,8 @@
     (((type graphic) (class color)) (:foreground "blue" :background "gray"))
     (t (:foreground "blue" :background "gray"))
     )
-  "Face for a hyde header")
+  "Face for a hyde header"
+  :group 'hyde)
 
 (defface hyde-committed-face
   '(
@@ -73,7 +91,9 @@
     (((type graphic) (class color)) (:foreground "blue"))
     (t (:foreground "blue"))
     )
-  "Face for a file that has been committed")
+  "Face for a file that has been committed"
+  :group 'hyde)
+
 
 (defface hyde-modified-face
   '(
@@ -81,7 +101,8 @@
     (((type graphic) (class color)) (:foreground "red"))
     (t (:foreground "red"))
     )
-  "Face for a file that has been modified but not committed")
+  "Face for a file that has been modified but not committed"
+  :group 'hyde)
 
 (defface hyde-unsaved-face
   '(
@@ -89,7 +110,8 @@
     (((type graphic) (class color)) (:foreground "black" :background "red"))
     (t (:foreground "black" :background "red"))
     )
-  "Face for a file that has been modified but not even saved")
+  "Face for a file that has been modified but not even saved"
+  :group 'hyde)
 
 (defface hyde-pushed-face
   '(
@@ -97,7 +119,8 @@
     (((type graphic) (class color)) (:foreground "green"))
     (t (:foreground "green"))
     )
-  "Face for a file that has been pushed to the remote repo")
+  "Face for a file that has been pushed to the remote repo"
+:group 'hyde)
 
 (defvar hyde-header-face 'hyde-header-face "Face for a hyde header")
 (defvar hyde-committed-face 'hyde-committed-face)
