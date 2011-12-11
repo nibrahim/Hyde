@@ -1,15 +1,17 @@
 Introduction
 ------------
-Hyde is an Emacs major mode to help create blogs with the excellent
+
+Hyde.el is an Emacs major mode to help create blogs with the excellent
 [Jekyll](http://jekyllrb.com/) blogging system. It comes with a front
 end (`hyde.el`), a version control backend (`hyde-git.el`) and an
 slightly modified version of the stock markdown editing mode that
-gives you a few bells and whistles while writing posts
-(`hyde-md.el`). 
+gives you a few bells and whistles while writing posts (`hyde-md.el`).
 
 
 Installation
 ------------
+
+## Hyde.el
 Download the all the `hyde-*.el` files and put them somewhere. Once
 you do that, add the directory where you put it to your load path like
 so and `require` it.
@@ -18,10 +20,18 @@ so and `require` it.
     (add-to-list 'load-path "/path/to/hyde*.el")
     (require 'hyde)
 
+## Jekyll
+
+There are no hyde specific things you'll have to do for your Jekyll
+installation. However, there is a `.hyde.el` file which you can drop
+into your blog directory which contains blog specific settings. This
+file will is not something that jekyll is aware of so you might want
+to update your `_config.yml` to not process this file.
+
 
 Operation
 ---------
-This mode is a simply a wrapped for a number of shell commands that
+This mode is a simply a wrapper for a number of shell commands that
 are used to create and deploy the site. It doesn't maintain any local
 state (in the form of status files etc.) so if you change your
 repository manually outside it, just refreshing the buffer will bring
@@ -40,10 +50,9 @@ over to my webspace using `rsync`. I don't use any of the git hooks
 Customisation
 -------------
     
-The variables that you might care to customise are
+Following are the variables affecting your blog and its management that you can customise
 
-* Location parameters
-  * `hyde-home` : The root directory of your blog
+  * `hyde-home` : The default root directory of your blog
   * `hyde-deploy-dir` : The directory where `jekyll` will generate the site for you to deploy
   * `hyde-posts-dir` : The directory that will contain the actual posts
 	  (this is relative to `hyde-home` and is `_posts` by default).
@@ -53,8 +62,17 @@ The variables that you might care to customise are
 	  `_config.yml` ).
   * `hyde/deploy-command` : The command used to deploy the site. `scp`,
 	  `rsync` or whatever else you might please.
+  * `hyde/jekyll-command` : The command used to run jekyll to generate the blog. You can add bits to take care of rvm for you here. 		  
+  * `hyde/hyde-list-posts-command` : The command used to list the posts in the hyde buffer. It is set to `"/bin/ls -1tr "` by default which will produce a chronologically ordered list. You can change it if you prefer alphabetic or something else. 
+  * `hyde/git/remote` : The remote to which the push command should send changes to. `origin` by default.
+  * `hyde/git/remote-branch` : The branch on which you blog resides and to which the push will happen. `master` by default.
 
-* VC parameters
+When you start hyde using `M-x hyde`, it will prompt you for the directory where your blog resides. All the paths mentioned above (`posts-dir` etc.) are all relative to this. The directory that you specify here will override `hyde-home` mentioned above. 
+
+Customising any of the above will set them globally (i.e. for all blogs managed by jekyll on your system). If you have multiple blogs which you're managing using jekyll, you can drop a `.hyde.el` file into the blog directory where you can manually set any of these variables. In this file, you can manually change any of these variables using `setq`. There is a `sample-dot-hyde.el` file which shows you how. These settings override the global ones mentioned above and you can have different such settings for different blogs on your system. 
+
+The following are commands and predicates used to handle the version control backend. You can change them if you want to add support for a version control system other than `git`. If it works for you, please send me a pull request and I'll integrate it. 
+
   * `hyde/vc-uncommittedp` : Predicate to check whether the file is uncommitted
   * `hyde/vc-unpushedp` : Predicate to check whether the file is not yet pushed
   * `hyde/vc-pushedp` :  Predicate to check if the file has been pushed (inverse of the above)
@@ -95,9 +113,15 @@ modified. It has a few extra covenience bindings
 * `C-c C-v` : Preview file (this is a markdown preview so extra
   `liquid` tags will not work). 
 
+License
+-------
+This program is licensed under the GNU General Public License Version
+3. Please check the LICENSE file for the full text of the license.
+
 To Do
 -----
 
 * Proper previews using a local Jekyll server
 * Keep state of deployment so that we know what posts have been
   deployed and what not.
+* Use `comint` instead of shell commands to do all the work. 
