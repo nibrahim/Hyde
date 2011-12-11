@@ -11,7 +11,7 @@ gives you a few bells and whistles while writing posts (`hyde-md.el`).
 Installation
 ------------
 
-## Hyde.el
+### Hyde.el
 Download the all the `hyde-*.el` files and put them somewhere. Once
 you do that, add the directory where you put it to your load path like
 so and `require` it.
@@ -20,7 +20,7 @@ so and `require` it.
     (add-to-list 'load-path "/path/to/hyde*.el")
     (require 'hyde)
 
-## Jekyll
+### Jekyll
 
 There are no hyde specific things you'll have to do for your Jekyll
 installation. However, there is a `.hyde.el` file which you can drop
