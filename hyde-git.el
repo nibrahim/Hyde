@@ -18,20 +18,29 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ;; 02111-1307, USA.
 
+(defcustom hyde/git/remote
+  "origin"
+  "The remote which should be pushed to"
+  :group 'hyde)
+
+(defcustom hyde/git/remote-branch
+  "master"
+  "The name of the branch on the remote which should be pushed to"
+  :group 'hyde)
+
 (defun hyde/git/uncommittedp (repo file)
   "Returns true if there are uncommitted changes for the current file"
   (let (
 	(cmd (format "cd '%s' && git diff-files --quiet '%s' > /dev/null" repo file))
 	)
-    ;; (message (concat " **** uncommittedp " cmd))
     (= (shell-command cmd) 1)))
 
 (defun hyde/git/unpushedp (repo file)
   "Returns true if there are unpushed changes for the current file"
   (let (
-	(cmd (format "cd '%s' && git log --exit-code origin/master..HEAD '%s' > /dev/null" repo file))
-	)
-    ;; (message (concat " **** unpushedp " cmd))
+	(cmd 
+	 (format "cd '%s' && git log --exit-code %s/%s..HEAD '%s' > /dev/null" repo hyde/git/remote hyde/git/remote-branch file)
+	 ))
     (= (shell-command cmd) 1)))
 
 (defun hyde/git/pushedp (repo file)
@@ -50,14 +59,12 @@
 
 (defun hyde/git/push (repo)
   "Pushes the repository"
-  (let ((cmd (format "cd '%s' && git push origin master > /dev/null" repo)))
-    ;; (message (concat " **** Pushing " cmd))
+  (let ((cmd (format "cd '%s' && git push %s %s > /dev/null" repo hyde/git/remote hyde/git/remote-branch)))
     (shell-command cmd)))
 
 (defun hyde/git/rename (base from to)
   "Rename the file in BASE from FROM to TO"
   (let ((cmd (format "cd '%s' && git mv '%s' '%s' > /dev/null" base from to)))
-    ;; (message (concat " **** Renaming " cmd))
     (shell-command cmd)))
 
 
