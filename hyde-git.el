@@ -60,6 +60,7 @@
 (defun hyde/git/push (repo)
   "Pushes the repository"
   (let ((cmd (format "cd '%s' && git push %s %s > /dev/null" repo hyde/git/remote hyde/git/remote-branch)))
+    (message cmd)
     (shell-command cmd)))
 
 (defun hyde/git/rename (base from to)

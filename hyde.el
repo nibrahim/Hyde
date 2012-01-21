@@ -32,11 +32,6 @@
   :type 'hook
   :group 'hyde)
 
-(defcustom hyde-home 
-  "/home/noufal/blog"
-  "Default blog directory"
-  :type 'directory
-  :group 'hyde)
 
 (defcustom hyde-deploy-dir
   "_site"
@@ -272,13 +267,17 @@ user"
 							  (format-time-string "%Y-%m-%d-")
 							  (downcase (replace-regexp-in-string " " "_" title))))))
 
-    (find-file post-file-name)
-    (insert "---\n")
-    (insert "layout: post\n")
-    (insert (format "title: \"%s\"\n" title))
-    (insert "---\n\n")
-    (save-buffer)
+    (save-excursion
+      (find-file post-file-name)
+      (insert "---\n")
+      (insert "layout: post\n")
+      (insert (format "title: \"%s\"\n" title))
+      (insert "---\n\n")
+      (save-buffer))
     (hyde/hyde-add-file post-file-name)
+    (find-file post-file-name)
+
+     ;; hyde-home not available in markdown buffer (FIXME)
     (hyde-markdown-mode)))
 
 (defun hyde/quit ()
@@ -336,7 +335,7 @@ user"
     (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
     (toggle-read-only 1))
 
-(defun hyde/read-config ()
+(defun hyde/read-config (hyde-home)
   "Loads up the config file to set the blog deployment and other information"
   (let (
 	(config-file (concat hyde-home "/.hyde.el"))
@@ -346,11 +345,10 @@ user"
     ))
   
 
-(defun hyde/hyde-mode ()
+(defun hyde/hyde-mode (home)
   "The Hyde major mode to edit Jekyll posts."
   (kill-all-local-variables)
-  (dolist (x '(hyde-home
-	       hyde-deploy-dir
+  (dolist (x '(hyde-deploy-dir
 	       hyde-posts-dir
 	       hyde-drafts-dir
 	       hyde/hyde-list-posts-command
@@ -359,24 +357,25 @@ user"
 	       hyde/git/remote
 	       hyde/git/remote-branch))
     (make-variable-buffer-local x))
+  (set (make-local-variable 'hyde-home) home)
   (use-local-map hyde-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(hyde-font-lock-keywords))
   (setq major-mode 'hyde/hyde-mode
 	mode-name "Hyde")
-  (hyde/read-config)
+  (hyde/read-config hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
   (run-hooks hyde-mode-hook))
 
 
 ;; Entry point
-(defun hyde (hyde-home)
+(defun hyde (home)
   "Enters hyde mode"
   (interactive "DBlog : ")
   (let (
-	(hyde-buffer (concat "*Hyde : " hyde-home "*"))
+	(hyde-buffer (concat "*Hyde : " home "*"))
 	)
     (switch-to-buffer (get-buffer-create hyde-buffer)))
-  (hyde/hyde-mode))
+  (hyde/hyde-mode home))
 
 (provide 'hyde)
