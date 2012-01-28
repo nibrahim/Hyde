@@ -86,7 +86,7 @@ Interface
   
 The main interface looks like the following screenshot
 
-![Hyde screenshot](Screenshot.png)
+![Hyde screenshot](https://github.com/nibrahim/Hyde/raw/master/Screenshot.png)
 
 The list of posts are presented on top along with a key of what the
 letters before the post names mean. The post names are also colourised
