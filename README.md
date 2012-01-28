@@ -113,6 +113,12 @@ modified. It has a few extra covenience bindings
 * `C-c C-v` : Preview file (this is a markdown preview so extra
   `liquid` tags will not work). 
 
+Octopress
+---------
+Hyde supports Octopress by default. The only thing you have to do is to create a directory under `source` for draft posts and
+edit the `.hyde.el` file with the right commands. To see an example, check out the [http://emacsmovies.org source](http://github.com/nibrahim/emacsmovies.org) repository.
+
+
 License
 -------
 This program is licensed under the GNU General Public License Version
