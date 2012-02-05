@@ -23,7 +23,7 @@
 (require 'hyde-md)
 
 ;; Constants for internal use
-(defconst hyde/hyde-version "0.2" 
+(defconst hyde/hyde-version "0.2"
   "Hyde version")
 
 ;; Internal customisable variables
@@ -40,7 +40,7 @@
   :group 'hyde)
 
 
-(defcustom hyde-posts-dir 
+(defcustom hyde-posts-dir
   "_posts"
   "Directory which contains the list of posts"
   :type 'string
@@ -52,7 +52,7 @@
   :type 'string
   :group 'hyde)
 
-(defcustom hyde/hyde-list-posts-command 
+(defcustom hyde/hyde-list-posts-command
   "/bin/ls -1tr "
   "Command to list the posts"
   :type 'string
@@ -69,6 +69,13 @@
   "Command used to deploy the site to the actual server"
   :type 'string
   :group 'hyde)
+
+(defcustom hyde/use-octopress
+  nil
+  "Changes some behaviors when using Octopress"
+  :type 'boolean
+  :group 'hyde)
+
 
 ;; Faces and font-locking
 (defface hyde-header-face
@@ -166,7 +173,7 @@
   "Commits the changes in the repository"
   (interactive "d\nMCommit message : ")
   (let (
-	(post-file-name (nth 
+	(post-file-name (nth
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
@@ -188,8 +195,8 @@
   "Deploys the generated website (should be run after hyde/run-jekyll"
   (interactive)
   (shell-command (format "cd %s && %s" hyde-home hyde/deploy-command)))
-  
-  
+
+
 ;; Utility functions
 (defun hyde/hyde-file-local-unsaved-changed (dir file)
   "Returns true if and only if the given file contains unsaved changes"
@@ -217,7 +224,7 @@ Status indicators are as follows:
 C Committed but not yet pushed
 M Local saved changes (uncommitted)
 E Local unsaved changes"
-  (or 
+  (or
    (and (hyde/hyde-file-local-unsaved-changed dir file) "E")
    (and (hyde/hyde-file-local-uncommitted-changed dir file) "M")
    (and (hyde/hyde-file-committed-not-pushed dir file) "C")
@@ -237,7 +244,7 @@ user"
   "Promotes the post under the cursor from a draft to a post"
   (interactive "d")
   (let (
-	(post-file-name (nth 
+	(post-file-name (nth
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
@@ -251,19 +258,19 @@ user"
   "Opens the post under cursor in the editor"
   (interactive "d")
   (let (
-	(post-file-name (nth 
+	(post-file-name (nth
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
-    (find-file 
+    (find-file
      (strip-string (concat hyde-home "/" dir "/" post-file-name)))
     (hyde-markdown-mode)))
 
 (defun hyde/new-post (title)
   "Creates a new post"
   (interactive "MEnter post title: ")
-  (let ((post-file-name (format "%s/%s/%s.markdown" 
-				hyde-home hyde-drafts-dir (concat 
+  (let ((post-file-name (format "%s/%s/%s.markdown"
+				hyde-home hyde-drafts-dir (concat
 							  (format-time-string "%Y-%m-%d-")
 							  (downcase (replace-regexp-in-string " " "_" title))))))
 
@@ -272,6 +279,9 @@ user"
       (insert "---\n")
       (insert "layout: post\n")
       (insert (format "title: \"%s\"\n" title))
+      (when hyde/use-octopress
+        (insert (format "date: %s\ncomments: true\ncategories:\n"
+                        (format-time-string "%Y-%m-%d %H:%M"))))
       (insert "---\n\n")
       (save-buffer))
     (hyde/hyde-add-file post-file-name)
@@ -288,7 +298,7 @@ user"
 
 ;; Keymaps
 (defvar hyde-mode-map
-  (let 
+  (let
       ((hyde-mode-map (make-sparse-keymap)))
     (define-key hyde-mode-map (kbd "n") 'hyde/new-post)
     (define-key hyde-mode-map (kbd "g") 'hyde/load-posts)
@@ -313,7 +323,7 @@ user"
   (insert ":: Editing blog at:" hyde-home "\n")
   (insert ":: Posts\n")
   ;; Insert posts from posts directory
-  (let 
+  (let
       ((posts (hyde/list-format-posts hyde-posts-dir)))
     (dolist (post posts)
       (progn
@@ -322,7 +332,7 @@ user"
 	(put-text-property (point) (+ (point) (length post)) 'dir hyde-posts-dir)
 	(forward-line))))
     (insert "\n:: Drafts\n")
-    (let 
+    (let
 	((posts (hyde/list-format-posts hyde-drafts-dir)))
       (dolist (post posts)
 	(progn
@@ -343,7 +353,7 @@ user"
     (message (format "Loading %s" config-file))
     (load-file config-file)
     ))
-  
+
 
 (defun hyde/hyde-mode (home)
   "The Hyde major mode to edit Jekyll posts."
@@ -376,6 +386,6 @@ user"
 	(hyde-buffer (concat "*Hyde : " home "*"))
 	)
     (switch-to-buffer (get-buffer-create hyde-buffer)))
-  (hyde/hyde-mode home))
+  (hyde/hyde-mode (expand-file-name home)))
 
 (provide 'hyde)
