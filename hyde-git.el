@@ -30,16 +30,18 @@
 
 (defun hyde/git/uncommittedp (repo file)
   "Returns true if there are uncommitted changes for the current file"
+  (cd repo)
   (let (
-	(cmd (format "cd '%s' && git diff-files --quiet '%s' > /dev/null" repo file))
+	(cmd (format "git diff-files --quiet '%s' > /dev/null" file))
 	)
     (= (shell-command cmd) 1)))
 
 (defun hyde/git/unpushedp (repo file)
   "Returns true if there are unpushed changes for the current file"
+  (cd repo)
   (let (
 	(cmd 
-	 (format "cd '%s' && git log --exit-code %s/%s..HEAD '%s' > /dev/null" repo hyde/git/remote hyde/git/remote-branch file)
+	 (format "git log --exit-code %s/%s..HEAD '%s' > /dev/null" hyde/git/remote hyde/git/remote-branch file)
 	 ))
     (= (shell-command cmd) 1)))
 
@@ -49,24 +51,27 @@
 
 (defun hyde/git/add (repo file)
   "Adds the given file to the repository"
-  (let ((cmd (format "cd '%s' && git add '%s' > /dev/null" repo file)))
+  (cd repo)
+  (let ((cmd (format "git add '%s' > /dev/null" file)))
     (shell-command cmd)))
 
 (defun hyde/git/commit (repo file commit-message)
   "Commits the given file to the repository"
-  (let ((cmd (format "cd '%s' && git commit -m '%s' '%s' > /dev/null" repo commit-message file)))
+  (cd repo)
+  (let ((cmd (format "git commit -m '%s' '%s' > /dev/null" commit-message file)))
     (shell-command cmd)))
 
 (defun hyde/git/push (repo)
   "Pushes the repository"
-  (let ((cmd (format "cd '%s' && git push %s %s > /dev/null" repo hyde/git/remote hyde/git/remote-branch)))
+  (cd repo)
+  (let ((cmd (format "git push %s %s > /dev/null" hyde/git/remote hyde/git/remote-branch)))
     (message cmd)
     (shell-command cmd)))
 
 (defun hyde/git/rename (base from to)
   "Rename the file in BASE from FROM to TO"
-  (let ((cmd (format "cd '%s' && git mv '%s' '%s' > /dev/null" base from to)))
+  (cd base)
+  (let ((cmd (format "git mv '%s' '%s' > /dev/null" from to)))
     (shell-command cmd)))
-
 
 (provide 'hyde-git)
