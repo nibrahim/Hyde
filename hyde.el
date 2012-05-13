@@ -21,6 +21,7 @@
 ;; Requirements
 (require 'hyde-git)
 (require 'hyde-md)
+(require 'easymenu)
 
 ;; Constants for internal use
 (defconst hyde/hyde-version "0.2" 
@@ -302,6 +303,21 @@ user"
     hyde-mode-map)
   "Keymap for Hyde")
 
+;; Menu
+(easy-menu-define hyde-mode-menu hyde-mode-map
+  "Hyde menu"
+  '("Hyde"
+    ["New post" hyde/new-post t]
+    ["Open post" hyde/open-post-maybe t]
+    ["Commit post" hyde/hyde-commit-post t]
+    ["Promote post" hyde/promote-to-post t]
+    "---"
+    ["Refresh" hyde/load-posts t]
+    ["Run Jekyll" hyde/run-jekyll t]
+    ["Deploy" hyde/deploy t]
+    ["Push" hyde/hyde-push t]
+    ["Quit" hyde/quit t]
+    ))
 
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
