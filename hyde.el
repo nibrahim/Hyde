@@ -346,7 +346,9 @@ user"
   
 
 (defun hyde/hyde-mode (home)
-  "The Hyde major mode to edit Jekyll posts."
+  "The Hyde major mode to edit Jekyll posts.
+
+\\{hyde-mode-map}"
   (kill-all-local-variables)
   (dolist (x '(hyde-deploy-dir
 	       hyde-posts-dir
