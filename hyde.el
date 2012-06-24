@@ -379,7 +379,8 @@ user"
   (use-local-map hyde-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(hyde-font-lock-keywords))
   (setq major-mode 'hyde/hyde-mode
-	mode-name "Hyde")
+	mode-name "Hyde"
+        default-directory home)
   (hyde/read-config hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
