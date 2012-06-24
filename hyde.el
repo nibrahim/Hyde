@@ -337,19 +337,20 @@ user"
 	  (insert (concat post "\n")))
 	(put-text-property (point) (+ (point) (length post)) 'dir hyde-posts-dir)
 	(forward-line))))
-    (insert "\n:: Drafts\n")
-    (let 
-	((posts (hyde/list-format-posts hyde-drafts-dir)))
-      (dolist (post posts)
-	(progn
-	  (save-excursion
-	    (insert (concat post "\n")))
-	  (put-text-property (point) (+ (point) (length post)) 'dir hyde-drafts-dir)
-	  (forward-line))))
-    ;; Insert footer
-    (insert (concat "\n\n:: Hyde version " hyde/hyde-version "\n"))
-    (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
-    (toggle-read-only 1))
+  ;; Inserts post for the drafts directory
+  (insert "\n:: Drafts\n")
+  (let 
+      ((posts (hyde/list-format-posts hyde-drafts-dir)))
+    (dolist (post posts)
+      (progn
+        (save-excursion
+          (insert (concat post "\n")))
+        (put-text-property (point) (+ (point) (length post)) 'dir hyde-drafts-dir)
+        (forward-line))))
+  ;; Insert footer
+  (insert (concat "\n\n:: Hyde version " hyde/hyde-version "\n"))
+  (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
+  (toggle-read-only 1))
 
 (defun hyde/read-config (hyde-home)
   "Loads up the config file to set the blog deployment and other information"
@@ -360,6 +361,14 @@ user"
     (load-file config-file)
     ))
   
+(defun hyde/setup-directories (home)
+  "Create expected directories if they don't exist"
+  (let
+      (
+       (drafts-dir (concat home "/" hyde-drafts-dir))
+       )
+    (if (not (file-exists-p drafts-dir))
+        (make-directory drafts-dir t))))
 
 (defun hyde/hyde-mode (home)
   "The Hyde major mode to edit Jekyll posts.
@@ -382,6 +391,7 @@ user"
 	mode-name "Hyde"
         default-directory home)
   (hyde/read-config hyde-home)
+  (hyde/setup-directories hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
   (run-hooks hyde-mode-hook))
