@@ -1,4 +1,4 @@
-;;; hyde.el
+;;; hyde.el --- ???
 ;; Copyright (C) 2004 Noufal Ibrahim <noufal at nibrahim.net.in>
 ;;
 ;; This program is not part of Gnu Emacs
