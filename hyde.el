@@ -265,16 +265,17 @@ user"
 (defun hyde/new-post (title)
   "Creates a new post"
   (interactive "MEnter post title: ")
-  (let ((post-file-name (format "%s/%s/%s.markdown" 
+  (let ((post-file-name (expand-file-name (format "%s/%s/%s.markdown" 
 				hyde-home hyde-drafts-dir (concat 
 							  (format-time-string "%Y-%m-%d-")
-							  (downcase (replace-regexp-in-string " " "_" title))))))
+							  (downcase (replace-regexp-in-string " " "_" title)))))))
 
     (save-excursion
       (find-file post-file-name)
       (insert "---\n")
       (insert "layout: post\n")
       (insert (format "title: \"%s\"\n" title))
+      (insert (format "date: \"%s\"\n" (format-time-string "%Y-%m-%d %H:%M:%S %z")))
       (insert "---\n\n")
       (save-buffer))
     (hyde/hyde-add-file post-file-name)
