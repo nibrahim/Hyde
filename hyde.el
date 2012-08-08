@@ -1,4 +1,4 @@
-;;; hyde.el
+;;; hyde.el --- ???
 ;; Copyright (C) 2004 Noufal Ibrahim <noufal at nibrahim.net.in>
 ;;
 ;; This program is not part of Gnu Emacs
@@ -21,6 +21,7 @@
 ;; Requirements
 (require 'hyde-git)
 (require 'hyde-md)
+(require 'easymenu)
 
 ;; Constants for internal use
 (defconst hyde/hyde-version "0.2" 
@@ -306,6 +307,21 @@ user"
     hyde-mode-map)
   "Keymap for Hyde")
 
+;; Menu
+(easy-menu-define hyde-mode-menu hyde-mode-map
+  "Hyde menu"
+  '("Hyde"
+    ["New post" hyde/new-post t]
+    ["Open post" hyde/open-post-maybe t]
+    ["Commit post" hyde/hyde-commit-post t]
+    ["Promote post" hyde/promote-to-post t]
+    "---"
+    ["Refresh" hyde/load-posts t]
+    ["Run Jekyll" hyde/run-jekyll t]
+    ["Deploy" hyde/deploy t]
+    ["Push" hyde/hyde-push t]
+    ["Quit" hyde/quit t]
+    ))
 
 (defun hyde/load-posts ()
   "Load up the posts and present them to the user"
@@ -325,19 +341,20 @@ user"
 	  (insert (concat post "\n")))
 	(put-text-property (point) (+ (point) (length post)) 'dir hyde-posts-dir)
 	(forward-line))))
-    (insert "\n:: Drafts\n")
-    (let 
-	((posts (hyde/list-format-posts hyde-drafts-dir)))
-      (dolist (post posts)
-	(progn
-	  (save-excursion
-	    (insert (concat post "\n")))
-	  (put-text-property (point) (+ (point) (length post)) 'dir hyde-drafts-dir)
-	  (forward-line))))
-    ;; Insert footer
-    (insert (concat "\n\n:: Hyde version " hyde/hyde-version "\n"))
-    (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
-    (toggle-read-only 1))
+  ;; Inserts post for the drafts directory
+  (insert "\n:: Drafts\n")
+  (let 
+      ((posts (hyde/list-format-posts hyde-drafts-dir)))
+    (dolist (post posts)
+      (progn
+        (save-excursion
+          (insert (concat post "\n")))
+        (put-text-property (point) (+ (point) (length post)) 'dir hyde-drafts-dir)
+        (forward-line))))
+  ;; Insert footer
+  (insert (concat "\n\n:: Hyde version " hyde/hyde-version "\n"))
+  (insert "Key:\n-----\n . Committed and pushed\n C Committed but not yet pushed\n M Local saved changes (uncommitted)\n E Local unsaved changes\n")
+  (toggle-read-only 1))
 
 (defun hyde/read-config (hyde-home)
   "Loads up the config file to set the blog deployment and other information"
@@ -348,9 +365,19 @@ user"
     (load-file config-file)
     ))
   
+(defun hyde/setup-directories (home)
+  "Create expected directories if they don't exist"
+  (let
+      (
+       (drafts-dir (concat home "/" hyde-drafts-dir))
+       )
+    (if (not (file-exists-p drafts-dir))
+        (make-directory drafts-dir t))))
 
 (defun hyde/hyde-mode (home)
-  "The Hyde major mode to edit Jekyll posts."
+  "The Hyde major mode to edit Jekyll posts.
+
+\\{hyde-mode-map}"
   (kill-all-local-variables)
   (dolist (x '(hyde-deploy-dir
 	       hyde-posts-dir
@@ -365,8 +392,10 @@ user"
   (use-local-map hyde-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(hyde-font-lock-keywords))
   (setq major-mode 'hyde/hyde-mode
-	mode-name "Hyde")
+	mode-name "Hyde"
+        default-directory home)
   (hyde/read-config hyde-home)
+  (hyde/setup-directories hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
   (run-hooks hyde-mode-hook))
