@@ -183,12 +183,14 @@
 (defun hyde/run-jekyll ()
   "Runs jekyll on the directory"
   (interactive)
-  (shell-command (format "cd %s && %s" hyde-home hyde/jekyll-command)))
+  (cd hyde-home)
+  (shell-command (format "%s" hyde/jekyll-command)))
 
 (defun hyde/deploy ()
   "Deploys the generated website (should be run after hyde/run-jekyll"
   (interactive)
-  (shell-command (format "cd %s && %s" hyde-home hyde/deploy-command)))
+  (cd hyde-home)
+  (shell-command (format "%s" hyde/deploy-command)))
   
   
 ;; Utility functions
@@ -229,9 +231,10 @@ E Local unsaved changes"
   "Gets the lists of posts from the given directory, formats them
 properly and returns them so that they can be presented to the
 user"
+  (cd (concat hyde-home "/" dir))
   (let (
 	(posts (split-string (strip-string (shell-command-to-string
-					    (concat "cd " hyde-home "/" dir " ; " hyde/hyde-list-posts-command ))))))
+					    hyde/hyde-list-posts-command )))))
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
 (defun hyde/promote-to-post (pos)
@@ -263,16 +266,17 @@ user"
 (defun hyde/new-post (title)
   "Creates a new post"
   (interactive "MEnter post title: ")
-  (let ((post-file-name (format "%s/%s/%s.markdown" 
+  (let ((post-file-name (expand-file-name (format "%s/%s/%s.markdown" 
 				hyde-home hyde-drafts-dir (concat 
 							  (format-time-string "%Y-%m-%d-")
-							  (downcase (replace-regexp-in-string " " "_" title))))))
+							  (downcase (replace-regexp-in-string " " "_" title)))))))
 
     (save-excursion
       (find-file post-file-name)
       (insert "---\n")
       (insert "layout: post\n")
       (insert (format "title: \"%s\"\n" title))
+      (insert (format "date: \"%s\"\n" (format-time-string "%Y-%m-%d %H:%M:%S %z")))
       (insert "---\n\n")
       (save-buffer))
     (hyde/hyde-add-file post-file-name)
