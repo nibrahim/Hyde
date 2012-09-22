@@ -31,15 +31,16 @@
 (defun hyde/git/uncommittedp (repo file)
   "Returns true if there are uncommitted changes for the current file"
   (let (
-	(cmd (format "cd '%s' && git diff-files --quiet '%s' > /dev/null" repo file))
+	(cmd (format "cd '%s' && git diff-files --quiet '%s' > /dev/null" (expand-file-name repo) file))
 	)
     (= (shell-command cmd) 1)))
+
 
 (defun hyde/git/unpushedp (repo file)
   "Returns true if there are unpushed changes for the current file"
   (let (
 	(cmd 
-	 (format "cd '%s' && git log --exit-code %s/%s..HEAD '%s' > /dev/null" repo hyde/git/remote hyde/git/remote-branch file)
+	 (format "cd '%s' && git log --exit-code %s/%s..HEAD '%s' > /dev/null" (expand-file-name repo) hyde/git/remote hyde/git/remote-branch file)
 	 ))
     (= (shell-command cmd) 1)))
 
@@ -49,24 +50,23 @@
 
 (defun hyde/git/add (repo file)
   "Adds the given file to the repository"
-  (let ((cmd (format "cd '%s' && git add '%s' > /dev/null" repo file)))
+  (let ((cmd (format "cd '%s' && git add '%s' > /dev/null" (expand-file-name repo) file)))
     (shell-command cmd)))
 
 (defun hyde/git/commit (repo file commit-message)
   "Commits the given file to the repository"
-  (let ((cmd (format "cd '%s' && git commit -m '%s' '%s' > /dev/null" repo commit-message file)))
+  (let ((cmd (format "cd '%s' && git commit -m '%s' '%s' > /dev/null" (expand-file-name repo) commit-message file)))
     (shell-command cmd)))
 
 (defun hyde/git/push (repo)
   "Pushes the repository"
-  (let ((cmd (format "cd '%s' && git push %s %s > /dev/null" repo hyde/git/remote hyde/git/remote-branch)))
+  (let ((cmd (format "cd '%s' && git push %s %s > /dev/null" (expand-file-name repo) hyde/git/remote hyde/git/remote-branch)))
     (message cmd)
     (shell-command cmd)))
 
 (defun hyde/git/rename (base from to)
   "Rename the file in BASE from FROM to TO"
-  (let ((cmd (format "cd '%s' && git mv '%s' '%s' > /dev/null" base from to)))
+  (let ((cmd (format "cd '%s' && git mv '%s' '%s' > /dev/null" (expand-file-name base) from to)))
     (shell-command cmd)))
-
 
 (provide 'hyde-git)

@@ -183,12 +183,12 @@
 (defun hyde/run-jekyll ()
   "Runs jekyll on the directory"
   (interactive)
-  (shell-command (format "cd %s && %s" hyde-home hyde/jekyll-command)))
+  (shell-command (format "cd %s && %s" (expand-file-name hyde-home) hyde/jekyll-command)))
 
 (defun hyde/deploy ()
   "Deploys the generated website (should be run after hyde/run-jekyll"
   (interactive)
-  (shell-command (format "cd %s && %s" hyde-home hyde/deploy-command)))
+  (shell-command (format "cd %s && %s" (expand-file-name hyde-home) hyde/deploy-command)))
   
   
 ;; Utility functions
@@ -231,7 +231,7 @@ properly and returns them so that they can be presented to the
 user"
   (let (
 	(posts (split-string (strip-string (shell-command-to-string
-					    (concat "cd " hyde-home "/" dir " ; " hyde/hyde-list-posts-command ))))))
+					    (concat "cd " (expand-file-name hyde-home) "/" dir " ; " hyde/hyde-list-posts-command ))))))
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
 (defun hyde/promote-to-post (pos)
