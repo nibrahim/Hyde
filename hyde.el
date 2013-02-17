@@ -256,9 +256,11 @@ user"
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
-    (find-file 
-     (strip-string (concat hyde-home "/" dir "/" post-file-name)))
-    (hyde-markdown-mode)))
+    (let ((hyde-buffer (current-buffer)))
+      (find-file 
+       (strip-string (concat hyde-home "/" dir "/" post-file-name)))
+      (hyde-markdown-activate-mode hyde-buffer))))
+
 
 (defun hyde/new-post (title)
   "Creates a new post"
