@@ -18,20 +18,30 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ;; 02111-1307, USA.
 
+(defun  hyde-markdown-processp (asset)
+  "Returns true if an asset is to be processed"
+  (and (not (string-prefix-p "http://" asset))
+       (not (string-prefix-p "https://" asset))
+       (not (string-prefix-p hyde-images-dir asset))))
+
+
 (defun hyde-markdown-process-assets ()
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
-      (message (format "Found : %s" (match-string-no-properties 2)))
-      ;; First copy over the asset properly to the images directory
-      (let ((new-name (hyde-markdown-copy-over-asset (match-string-no-properties 2) hyde-home)))
-        (message (format "Complete match is %s" (match-string-no-properties 0)))
-        (message (format "Copied over to %s" new-name))
-        ;; rewrite the URL in the markdown file
-        (message (format "Replacing with %s" (format "![\\1](%s)" new-name)))
-        (let ((p (copy-marker (point) t)))
-          (replace-match (format "![\\1](%s)" new-name))
-          (goto-char p))))))
+      (let ((asset (match-string-no-properties 2)))
+        (message (format "Found : %s" asset))
+        (if (hyde-markdown-processp asset)
+            (progn
+              ;; First copy over the asset properly to the images directory
+              (let ((new-name (hyde-markdown-copy-over-asset asset hyde-home)))
+                (message (format "Complete match is %s" (match-string-no-properties 0)))
+                (message (format "Copied over to %s" new-name))
+                ;; rewrite the URL in the markdown file
+                (message (format "Replacing with %s" (format "![\\1](%s)" new-name)))
+                (let ((p (copy-marker (point) t)))
+                  (replace-match (format "![\\1](%s)" new-name))
+                  (goto-char p)))))))))
 
 
 (defun hyde-markdown-create-target-filename (sourcefile target_dir)
