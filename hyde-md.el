@@ -18,29 +18,46 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ;; 02111-1307, USA.
 
-(defun hyde-markdown-extract-images (buffer)
-  (with-current-buffer buffer
-    (save-excursion
-      (goto-char (point-min))
-      (let ((assets '()))
-        (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
-          (add-to-list 'assets (match-string-no-properties 2)))
-        assets ))))
+(defun hyde-markdown-process-assets ()
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
+      (message (format "Found : %s" (match-string-no-properties 2)))
+      ;; First copy over the asset properly to the images directory
+      (let ((new-name (hyde-markdown-copy-over-asset (match-string-no-properties 2) hyde-home)))
+        (message (format "Complete match is %s" (match-string-no-properties 0)))
+        (message (format "Copied over to %s" new-name))
+        ;; rewrite the URL in the markdown file
+        (message (format "Replacing with %s" (format "![\\1](%s)" new-name)))
+        (let ((p (copy-marker (point) t)))
+          (replace-match (format "![\\1](%s)" new-name))
+          (goto-char p))))))
 
 
-(defun hyde-markdown-extract-and-add-images ()
-  (dolist (asset (hyde-markdown-extract-images (current-buffer)))
-    (copy-file asset (format "/%s/%s/%s"
-                             hyde-home
-                             hyde-images-dir 
-                             (strip-string (shell-command-to-string (format "basename %s" asset)))) 1 )))
+(defun hyde-markdown-create-target-filename (sourcefile target_dir)
+  (let* ((target_file (strip-string (shell-command-to-string (format "basename %s" sourcefile))))
+         (target (format "%s/%s" target_dir target_file))
+         (cntr 1))
+    (progn
+      (while (file-exists-p target)
+        (setq target (format "%s/%d-%s" target_dir cntr target_file))
+        (setq cntr (1+ cntr)))
+      target)))
+      
+(defun hyde-markdown-copy-over-asset (asset hyde-home)
+  (let (
+        (full-target (hyde-markdown-create-target-filename asset (format "%s/%s/" hyde-home hyde-images-dir)))
+        )
+    (progn
+      (copy-file asset full-target)
+      (replace-regexp-in-string (format "%s/?" (regexp-quote hyde-home)) "" full-target))))
 
 
 (defun hyde-markdown-end-edit ()
   "Function called signifying the end of the editing session"
   (interactive)
   (save-buffer (current-buffer))
-  (hyde-markdown-extract-and-add-images)
+  (hyde-markdown-process-assets)
   (bury-buffer)
   (hyde/load-posts)
   nil)
