@@ -56,7 +56,7 @@
       
 (defun hyde-markdown-copy-over-asset (asset hyde-home)
   (let (
-        (full-target (hyde-markdown-create-target-filename asset (format "%s/%s/" hyde-home hyde-images-dir)))
+        (full-target (hyde-markdown-create-target-filename asset hyde-images-dir))
         )
     (progn
       (copy-file asset full-target)
