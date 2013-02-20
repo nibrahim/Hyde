@@ -48,7 +48,7 @@
 (defun hyde-markdown-insert-image (image desc)
   (interactive "fImage file: 
 sDescription: ")
-  (insert (format "![%s](%s)" desc image)))
+  (insert (format "![%s](%s)" desc (expand-file-name image))))
 
 (define-derived-mode hyde-markdown-mode  markdown-mode "Hyde-markdown" 
   "Markdown mode with a few extra bindings for convenience" 
