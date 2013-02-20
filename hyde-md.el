@@ -66,8 +66,8 @@
 (defun hyde-markdown-end-edit ()
   "Function called signifying the end of the editing session"
   (interactive)
-  (save-buffer (current-buffer))
   (hyde-markdown-process-assets)
+  (save-buffer (current-buffer))
   (bury-buffer)
   (hyde/load-posts)
   nil)
