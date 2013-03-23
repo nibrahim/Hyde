@@ -19,8 +19,13 @@
 ;; 02111-1307, USA.
 
 (defun hyde-markdown-end-edit ()
-  "Function called signifying the end of the editing session"
+  "Function called signifying the end of the editing session this
+function updates the date field in YAML header"
   (interactive)
+  (beginning-of-buffer)
+  (move-to-window-line 3)
+  (delete-region (line-beginning-position) (line-end-position))
+  (insert (format "date: \"%s\"" (format-time-string "%Y-%m-%d %H:%M:%S %z")))  
   (save-buffer (current-buffer))
   (bury-buffer)
   (hyde/load-posts)
