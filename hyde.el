@@ -282,7 +282,7 @@ user"
     (find-file post-file-name)
 
      ;; hyde-home not available in markdown buffer (FIXME)
-    (hyde-markdown-mode)))
+    (hyde-markdown-activate-mode hyde-buffer)))
 
 (defun hyde/quit ()
   "Quits hyde"
