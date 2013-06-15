@@ -53,9 +53,14 @@
   (let ((cmd (format "cd '%s' && git add '%s' > /dev/null" (expand-file-name repo) file)))
     (shell-command cmd)))
 
-(defun hyde/git/commit (repo file commit-message)
-  "Commits the given file to the repository"
-  (let ((cmd (format "cd '%s' && git commit -m '%s' '%s' > /dev/null" (expand-file-name repo) commit-message file)))
+(defun hyde/git/commit (repo files commit-message)
+  "Commits the given files to the repository"
+  ; Add each of the files in the list
+  (dolist (f files)
+    (let ((cmd (format "cd '%s' && git add '%s'" (expand-file-name repo) f)))
+      (shell-command cmd)))
+  ; Commit them
+  (let ((cmd (format "cd '%s' && git commit -m '%s' > /dev/null" (expand-file-name repo) commit-message)))
     (shell-command cmd)))
 
 (defun hyde/git/push (repo)

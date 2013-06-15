@@ -26,6 +26,10 @@
 
 
 (defun hyde-markdown-process-assets ()
+  ; First make sure that the image directory exists and if not create it. 
+  (if (not (file-exists-p hyde-images-dir))
+      (make-directory hyde-images-dir))
+  ; Now start processing assets
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)

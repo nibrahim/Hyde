@@ -53,11 +53,12 @@
   :type 'string
   :group 'hyde)
 
-(defcustom hyde/hyde-list-posts-command 
-  "/bin/ls -1tr "
-  "Command to list the posts"
+(defcustom hyde-images-dir
+  "images"
+  "Directory which contains images embedded on the blog"
   :type 'string
   :group 'hyde)
+
 
 (defcustom hyde/jekyll-command
   "jekyll"
@@ -159,19 +160,27 @@
   "Stages the given file for commit."
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
-(defun hyde/hyde-rename-file (from to)
-  "Renames the given file from to to"
+(defun hyde/hyde-vc-rename-file (from to)
+  "Renames the given version controlled file from to to"
   (hyde/vc-rename hyde-home from to))
+
+(defun hyde/hyde-rename-file (from to)
+  "Renames the regular file from to to"
+  (rename-file from to t))
 
 (defun hyde/hyde-commit-post (pos commit-message)
   "Commits the changes in the repository"
   (interactive "d\nMCommit message : ")
-  (let (
-	(post-file-name (nth 
-			 1
-			 (split-string (strip-string (thing-at-point 'line)) " : ")))
-	(dir (get-text-property pos 'dir)))
-    (hyde/vc-commit (concat hyde-home "/" dir) post-file-name commit-message)
+  (let* (
+         (post-file-name (nth 
+                          1
+                          (split-string (strip-string (thing-at-point 'line)) " : ")))
+         (dir (get-text-property pos 'dir))
+         (post-full-path (concat hyde-home "/" dir "/" post-file-name))
+         )
+    (hyde/vc-commit (concat hyde-home "/" dir)
+                    (append (hyde/hyde-get-post-assets post-full-path) (list post-file-name))
+                    commit-message)
     (hyde/load-posts)))
 
 (defun hyde/hyde-push ()
@@ -229,10 +238,20 @@ E Local unsaved changes"
   "Gets the lists of posts from the given directory, formats them
 properly and returns them so that they can be presented to the
 user"
-  (let (
-	(posts (split-string (strip-string (shell-command-to-string
-					    (concat "cd " (expand-file-name hyde-home) "/" dir " ; " hyde/hyde-list-posts-command ))))))
+  (let* (
+         (posts-dir (concat (expand-file-name hyde-home) "/" dir))
+         (posts (directory-files posts-dir nil ".*markdown" nil)))
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
+
+(defun hyde/hyde-get-post-assets (post)
+  (save-excursion
+    (find-file post)
+    (goto-char (point-min))
+    (let ((assets '()))
+      (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
+        ; TBD don't try to process http assets.
+        (add-to-list 'assets (match-string-no-properties 2)))
+      assets)))
 
 (defun hyde/promote-to-post (pos)
   "Promotes the post under the cursor from a draft to a post"
@@ -243,8 +262,14 @@ user"
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
     (if (equal dir hyde-drafts-dir)
-	(hyde/hyde-rename-file (concat dir "/" post-file-name)
-			       (concat hyde-posts-dir "/" post-file-name)))
+        (progn
+          ;; Move over post assets
+          (dolist (asset (hyde/hyde-get-post-assets (concat dir "/" post-file-name)))
+            (progn
+              (hyde/hyde-rename-file (concat dir "/" asset) (concat hyde-posts-dir "/" asset))))
+          ;; Move over the actual post
+          (hyde/hyde-rename-file (concat dir "/" post-file-name)
+                                 (concat hyde-posts-dir "/" post-file-name))))
     (hyde/load-posts)))
 
 
@@ -268,8 +293,8 @@ user"
   (let ((post-file-name (expand-file-name (format "%s/%s/%s.markdown" 
                                                   hyde-home hyde-drafts-dir (concat 
                                                                              (format-time-string "%Y-%m-%d-")
-                                                                             (downcase (replace-regexp-in-string " " "_" title)))))))
-
+                                                                             (downcase (replace-regexp-in-string " " "_" title))))))
+        (hyde-buffer (current-buffer)))
     (save-excursion
       (find-file post-file-name)
       (insert "---\n")
@@ -381,7 +406,6 @@ user"
   (dolist (x '(hyde-deploy-dir
 	       hyde-posts-dir
 	       hyde-drafts-dir
-	       hyde/hyde-list-posts-command
 	       hyde/jekyll-command
 	       hyde/deploy-command
 	       hyde/git/remote
