@@ -24,6 +24,11 @@
        (not (string-prefix-p "https://" asset))
        (not (string-prefix-p hyde-images-dir asset))))
 
+(defun hyde-markdown-article-title ()
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward-regexp "title: \\(.*\\)")
+    (match-string 1)))
 
 (defun hyde-markdown-process-assets ()
   ; First make sure that the image directory exists and if not create it. 
@@ -67,11 +72,15 @@
       (replace-regexp-in-string (format "%s/?" (regexp-quote hyde-home)) "" full-target))))
 
 
+
 (defun hyde-markdown-end-edit ()
   "Function called signifying the end of the editing session"
   (interactive)
   (hyde-markdown-process-assets)
   (save-buffer (current-buffer))
+  (hyde/vc-commit hyde-home 
+                  (append (hyde/hyde-get-post-assets (buffer-file-name (current-buffer))) (list (buffer-file-name (current-buffer))))
+                  (concat "Updating " (hyde-markdown-article-title )))
   (bury-buffer)
   (hyde/load-posts)
   nil)
