@@ -425,6 +425,14 @@ user"
   (hyde/setup-directories hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
+  ;; Create directories for images
+  (let ((draft-images-dir (concat hyde-home hyde-drafts-dir "/" hyde-images-dir))
+        (posts-images-dir (concat hyde-home hyde-posts-dir "/" hyde-images-dir))
+	(hyde-buffer (concat "*Hyde : " home "*")))
+    (if (not (file-exists-p draft-images-dir))
+        (make-directory draft-images-dir))
+    (if (not (file-exists-p posts-images-dir))
+        (make-directory posts-images-dir)))
   (run-hooks hyde-mode-hook))
 
 
