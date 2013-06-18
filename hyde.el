@@ -24,7 +24,7 @@
 (require 'easymenu)
 
 ;; Constants for internal use
-(defconst hyde/hyde-version "0.2" 
+(defconst hyde/hyde-version "0.3a"
   "Hyde version")
 
 ;; Internal customisable variables
