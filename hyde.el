@@ -241,17 +241,16 @@ user"
 
 (defun hyde/hyde-get-post-assets (post)
   (save-excursion
-    (find-file post)
-    (goto-char (point-min))
-    (let ((assets '()))
-      (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
-        ;; TBD don't try to process http assets.
-        (add-to-list 'assets (concat
-                              (strip-string (shell-command-to-string (format "dirname %s" post)))
-                              "/"
-                              (match-string-no-properties 2))))
-        
-      assets)))
+    (with-current-buffer (find-file post)
+      (goto-char (point-min))
+      (let ((assets '()))
+        (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
+          ;; TBD don't try to process http assets.
+          (add-to-list 'assets (concat
+                                (strip-string (shell-command-to-string (format "dirname %s" post)))
+                                "/"
+                                (match-string-no-properties 2))))
+        assets))))
   
 (defun hyde/promote-to-post (pos)
   "Promotes the post under the cursor from a draft to a post"
