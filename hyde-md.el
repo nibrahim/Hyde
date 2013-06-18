@@ -24,12 +24,6 @@
        (not (string-prefix-p "https://" asset))
        (not (string-prefix-p hyde-images-dir asset))))
 
-(defun hyde-markdown-article-title ()
-  (save-excursion
-    (goto-char (point-min))
-    (search-forward-regexp "title: \\(.*\\)")
-    (match-string 1)))
-
 (defun hyde-markdown-process-assets ()
   (save-excursion
     (goto-char (point-min))
@@ -76,7 +70,7 @@
   (save-buffer (current-buffer))
   (hyde/vc-commit hyde-home 
                   (append (hyde/hyde-get-post-assets (buffer-file-name (current-buffer))) (list (buffer-file-name (current-buffer))))
-                  (concat "Updating " (hyde-markdown-article-title )))
+                  (concat "Updating " (buffer-name (current-buffer))))
   (bury-buffer)
   (hyde/load-posts)
   nil)
