@@ -269,6 +269,9 @@ user"
           ;; Move over the actual post
           (hyde/hyde-rename-file (concat dir "/" post-file-name)
                                  (concat hyde-posts-dir "/" post-file-name))))
+    (hyde/vc-commit hyde-home
+                    '()
+                    (concat "Promoting " post-file-name))
     (hyde/load-posts)))
 
 
