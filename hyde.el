@@ -265,7 +265,10 @@ user"
           ;; Move over post assets
           (dolist (asset (hyde/hyde-get-post-assets (concat dir "/" post-file-name)))
             (progn
-              (hyde/hyde-rename-file (concat dir "/" asset) (concat hyde-posts-dir "/" asset))))
+              (message (concat "Asset is : " asset))
+              (hyde/hyde-rename-file asset 
+                                     (format "%s%s" hyde-home
+                                             (replace-regexp-in-string "_drafts" "" asset)))))
           ;; Move over the actual post
           (hyde/hyde-rename-file (concat dir "/" post-file-name)
                                  (concat hyde-posts-dir "/" post-file-name))))
@@ -425,12 +428,14 @@ user"
   (hl-line-mode t)
   ;; Create directories for images
   (let ((draft-images-dir (concat hyde-home hyde-drafts-dir "/" hyde-images-dir))
-        (posts-images-dir (concat hyde-home hyde-posts-dir "/" hyde-images-dir))
-	(hyde-buffer (concat "*Hyde : " home "*")))
-    (if (not (file-exists-p draft-images-dir))
-        (make-directory draft-images-dir))
-    (if (not (file-exists-p posts-images-dir))
-        (make-directory posts-images-dir)))
+        (posts-images-dir (concat hyde-home "/" hyde-images-dir)))
+    (progn
+      (message (concat "Drafts image dir :"draft-images-dir))
+      (message (concat "Posts image dir :"posts-images-dir))
+      (if (not (file-exists-p draft-images-dir))
+          (make-directory draft-images-dir))
+      (if (not (file-exists-p posts-images-dir))
+          (make-directory posts-images-dir))))
   (run-hooks hyde-mode-hook))
 
 

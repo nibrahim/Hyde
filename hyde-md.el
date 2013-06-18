@@ -59,7 +59,8 @@
         )
     (progn
       (copy-file asset full-target)
-      (replace-regexp-in-string (format "%s/?" (regexp-quote hyde-home)) "" full-target))))
+      (concat "/" 
+              (replace-regexp-in-string (format "%s/?" (regexp-quote hyde-home)) "" full-target)))))
 
 
 
