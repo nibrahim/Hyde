@@ -390,6 +390,8 @@ user"
   (let (
 	(config-file (concat hyde-home "/.hyde.el"))
 	)
+    (if (not (file-exists-p config-file))
+        (error (format "Config file '%s' is missing. Won't continue" config-file)))
     (message (format "Loading %s" config-file))
     (load-file config-file)
     ))
