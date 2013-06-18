@@ -142,7 +142,7 @@
 (defalias 'hyde/vc-add  'hyde/git/add "Command to add a file to the DVCS")
 (defalias 'hyde/vc-commit  'hyde/git/commit "Command to add a file to the DVCS")
 (defalias 'hyde/vc-push  'hyde/git/push "Command to push the repository")
-(defalias 'hyde/vc-rename  'hyde/git/rename "Command to push the repository")
+(defalias 'hyde/vc-rename  'hyde/git/rename "Command to rename files")
 
 (defun hyde/hyde-file-local-uncommitted-changed (dir file)
   "Return whether the given file in the given dir is uncommitted"
@@ -160,13 +160,9 @@
   "Stages the given file for commit."
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
-(defun hyde/hyde-vc-rename-file (from to)
+(defun hyde/hyde-rename-file (from to)
   "Renames the given version controlled file from to to"
   (hyde/vc-rename hyde-home from to))
-
-(defun hyde/hyde-rename-file (from to)
-  "Renames the regular file from to to"
-  (rename-file from to t))
 
 (defun hyde/hyde-commit-post (pos commit-message)
   "Commits the changes in the repository"
