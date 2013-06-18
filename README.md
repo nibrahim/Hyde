@@ -60,6 +60,7 @@ Following are the variables affecting your blog and its management that you can 
 	  drafts (this is relative to `hyde-home` and is `_drafts` by
 	  default. You might want to _ignore_ this directory in
 	  `_config.yml` ).
+  * `hyde_images_dir` : The directory which stores images and other assets that you embed in your posts. This will be a sub directory of `_drafts` and a top level directory when the post is promoted.
   * `hyde/deploy-command` : The command used to deploy the site. `scp`,
 	  `rsync` or whatever else you might please.
   * `hyde/jekyll-command` : The command used to run jekyll to generate the blog. You can add bits to take care of rvm for you here. 		  
@@ -102,16 +103,17 @@ The keys you can use at this time are
 * `d` : Deploy the site.
 * `g` : Refresh posts (useful if you've done something by hand
   earlier)
-* `p` : Promote a post from a draft to a a published post
+* `p` : Promote a post from a draft to a a published post and commit it.
 * `q` : Quit hyde.  
 * `RET` : Open the current post for editing.
 
 The markdown mode in which the buffers open up for editing is slightly
 modified. It has a few extra covenience bindings
 
-* `C-c C-c` : Save file and finish editing
+* `C-c C-c` : Save file and commit it. This will also copy over all inserted images into the repository 
 * `C-c C-v` : Preview file (this is a markdown preview so extra
-  `liquid` tags will not work). 
+  `liquid` tags will not work).
+* `C-c C-i` : Insert image. Inserts an image file into the current buffer.  
 
 Octopress
 ---------
@@ -131,3 +133,6 @@ To Do
 * Keep state of deployment so that we know what posts have been
   deployed and what not.
 * Use `comint` instead of shell commands to do all the work. 
+* There are problems while editing a promoted post that has embedded
+  images. The whole asset management thing is broken and needs to be
+  rethought.
