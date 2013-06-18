@@ -53,11 +53,12 @@
   :type 'string
   :group 'hyde)
 
-(defcustom hyde/hyde-list-posts-command 
-  "/bin/ls -1tr "
-  "Command to list the posts"
+(defcustom hyde-images-dir
+  "images"
+  "Directory which contains images embedded on the blog"
   :type 'string
   :group 'hyde)
+
 
 (defcustom hyde/jekyll-command
   "jekyll"
@@ -141,7 +142,7 @@
 (defalias 'hyde/vc-add  'hyde/git/add "Command to add a file to the DVCS")
 (defalias 'hyde/vc-commit  'hyde/git/commit "Command to add a file to the DVCS")
 (defalias 'hyde/vc-push  'hyde/git/push "Command to push the repository")
-(defalias 'hyde/vc-rename  'hyde/git/rename "Command to push the repository")
+(defalias 'hyde/vc-rename  'hyde/git/rename "Command to rename files")
 
 (defun hyde/hyde-file-local-uncommitted-changed (dir file)
   "Return whether the given file in the given dir is uncommitted"
@@ -160,18 +161,22 @@
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
 
 (defun hyde/hyde-rename-file (from to)
-  "Renames the given file from to to"
+  "Renames the given version controlled file from to to"
   (hyde/vc-rename hyde-home from to))
 
 (defun hyde/hyde-commit-post (pos commit-message)
   "Commits the changes in the repository"
   (interactive "d\nMCommit message : ")
-  (let (
-	(post-file-name (nth 
-			 1
-			 (split-string (strip-string (thing-at-point 'line)) " : ")))
-	(dir (get-text-property pos 'dir)))
-    (hyde/vc-commit (concat hyde-home "/" dir) post-file-name commit-message)
+  (let* (
+         (post-file-name (nth 
+                          1
+                          (split-string (strip-string (thing-at-point 'line)) " : ")))
+         (dir (get-text-property pos 'dir))
+         (post-full-path (concat hyde-home "/" dir "/" post-file-name))
+         )
+    (hyde/vc-commit (concat hyde-home "/" dir)
+                    (append (hyde/hyde-get-post-assets post-full-path) (list post-file-name))
+                    commit-message)
     (hyde/load-posts)))
 
 (defun hyde/hyde-push ()
@@ -229,11 +234,24 @@ E Local unsaved changes"
   "Gets the lists of posts from the given directory, formats them
 properly and returns them so that they can be presented to the
 user"
-  (let (
-	(posts (split-string (strip-string (shell-command-to-string
-					    (concat "cd " (expand-file-name hyde-home) "/" dir " ; " hyde/hyde-list-posts-command ))))))
+  (let* (
+         (posts-dir (concat (expand-file-name hyde-home) "/" dir))
+         (posts (directory-files posts-dir nil ".*markdown" nil)))
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
+(defun hyde/hyde-get-post-assets (post)
+  (save-excursion
+    (with-current-buffer (find-file post)
+      (goto-char (point-min))
+      (let ((assets '()))
+        (while (re-search-forward "!\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
+          ;; TBD don't try to process http assets.
+          (add-to-list 'assets (concat
+                                (strip-string (shell-command-to-string (format "dirname %s" post)))
+                                "/"
+                                (match-string-no-properties 2))))
+        assets))))
+  
 (defun hyde/promote-to-post (pos)
   "Promotes the post under the cursor from a draft to a post"
   (interactive "d")
@@ -243,8 +261,20 @@ user"
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
     (if (equal dir hyde-drafts-dir)
-	(hyde/hyde-rename-file (concat dir "/" post-file-name)
-			       (concat hyde-posts-dir "/" post-file-name)))
+        (progn
+          ;; Move over post assets
+          (dolist (asset (hyde/hyde-get-post-assets (concat dir "/" post-file-name)))
+            (progn
+              (message (concat "Asset is : " asset))
+              (hyde/hyde-rename-file asset 
+                                     (format "%s%s" hyde-home
+                                             (replace-regexp-in-string "_drafts" "" asset)))))
+          ;; Move over the actual post
+          (hyde/hyde-rename-file (concat dir "/" post-file-name)
+                                 (concat hyde-posts-dir "/" post-file-name))))
+    (hyde/vc-commit hyde-home
+                    '()
+                    (concat "Promoting " post-file-name))
     (hyde/load-posts)))
 
 
@@ -256,9 +286,11 @@ user"
 			 1
 			 (split-string (strip-string (thing-at-point 'line)) " : ")))
 	(dir (get-text-property pos 'dir)))
-    (find-file 
-     (strip-string (concat hyde-home "/" dir "/" post-file-name)))
-    (hyde-markdown-mode)))
+    (let ((hyde-buffer (current-buffer)))
+      (find-file 
+       (strip-string (concat hyde-home "/" dir "/" post-file-name)))
+      (hyde-markdown-activate-mode hyde-buffer))))
+
 
 (defun hyde/new-post (title)
   "Creates a new post"
@@ -266,8 +298,8 @@ user"
   (let ((post-file-name (expand-file-name (format "%s/%s/%s.markdown" 
                                                   hyde-home hyde-drafts-dir (concat 
                                                                              (format-time-string "%Y-%m-%d-")
-                                                                             (downcase (replace-regexp-in-string " " "_" title)))))))
-
+                                                                             (downcase (replace-regexp-in-string " " "_" title))))))
+        (hyde-buffer (current-buffer)))
     (save-excursion
       (find-file post-file-name)
       (insert "---\n")
@@ -280,7 +312,7 @@ user"
     (find-file post-file-name)
 
      ;; hyde-home not available in markdown buffer (FIXME)
-    (hyde-markdown-mode)))
+    (hyde-markdown-activate-mode hyde-buffer)))
 
 (defun hyde/quit ()
   "Quits hyde"
@@ -358,6 +390,8 @@ user"
   (let (
 	(config-file (concat hyde-home "/.hyde.el"))
 	)
+    (if (not (file-exists-p config-file))
+        (error (format "Config file '%s' is missing. Won't continue" config-file)))
     (message (format "Loading %s" config-file))
     (load-file config-file)
     ))
@@ -379,7 +413,6 @@ user"
   (dolist (x '(hyde-deploy-dir
 	       hyde-posts-dir
 	       hyde-drafts-dir
-	       hyde/hyde-list-posts-command
 	       hyde/jekyll-command
 	       hyde/deploy-command
 	       hyde/git/remote
@@ -395,6 +428,16 @@ user"
   (hyde/setup-directories hyde-home)
   (hyde/load-posts)
   (hl-line-mode t)
+  ;; Create directories for images
+  (let ((draft-images-dir (concat hyde-home hyde-drafts-dir "/" hyde-images-dir))
+        (posts-images-dir (concat hyde-home "/" hyde-images-dir)))
+    (progn
+      (message (concat "Drafts image dir :"draft-images-dir))
+      (message (concat "Posts image dir :"posts-images-dir))
+      (if (not (file-exists-p draft-images-dir))
+          (make-directory draft-images-dir))
+      (if (not (file-exists-p posts-images-dir))
+          (make-directory posts-images-dir))))
   (run-hooks hyde-mode-hook))
 
 
