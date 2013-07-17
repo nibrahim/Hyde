@@ -65,13 +65,8 @@
 
 
 (defun hyde-markdown-end-edit ()
-  "Function called signifying the end of the editing session this
-function updates the date field in YAML header"
+  "Function called signifying the end of the editing session"
   (interactive)
-  (beginning-of-buffer)
-  (move-to-window-line 3)
-  (delete-region (line-beginning-position) (line-end-position))
-  (insert (format "date: \"%s\"" (format-time-string "%Y-%m-%d %H:%M:%S %z")))  
   (hyde-markdown-process-assets)
   (save-buffer (current-buffer))
   (hyde/vc-commit hyde-home 
