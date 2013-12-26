@@ -452,3 +452,5 @@ user"
   (hyde/hyde-mode home))
 
 (provide 'hyde)
+
+;;; hyde.el ends here
