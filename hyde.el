@@ -1,4 +1,5 @@
-;;; hyde.el --- ???
+;;; hyde.el --- Major mode to help create and manage Jekyll blogs
+
 ;; Copyright (C) 2004 Noufal Ibrahim <noufal at nibrahim.net.in>
 ;;
 ;; This program is not part of Gnu Emacs
@@ -452,3 +453,5 @@ user"
   (hyde/hyde-mode home))
 
 (provide 'hyde)
+
+;;; hyde.el ends here
