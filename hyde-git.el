@@ -87,3 +87,5 @@
     (shell-command cmd)))
 
 (provide 'hyde-git)
+
+;;; hyde-git.el ends here
