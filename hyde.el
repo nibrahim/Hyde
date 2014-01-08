@@ -374,6 +374,9 @@ user"
     "---"
     ["Refresh" hyde/load-posts t]
     ["Run Jekyll" hyde/run-jekyll t]
+    ["(Re)start server" hyde/serve t]
+    ["Stop server" hyde/stop-serve t]
+    "---"
     ["Deploy" hyde/deploy t]
     ["Push" hyde/hyde-push t]
     ["Quit" hyde/quit t]
