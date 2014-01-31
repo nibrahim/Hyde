@@ -276,32 +276,41 @@ user"
                                 "/"
                                 (match-string-no-properties 2))))
         assets))))
-  
-(defun hyde/promote-to-post (pos)
-  "Promotes the post under the cursor from a draft to a post"
+
+(defun hyde/prodemote-to-post (pos)
+  "Move file (& assets) drafts to posts and visa-versa"
   (interactive "d")
   (let (
-	(post-file-name (nth 
-			 1
-			 (split-string (strip-string (thing-at-point 'line)) " : ")))
-	(dir (get-text-property pos 'dir)))
-    (if (equal dir hyde-drafts-dir)
-        (progn
-          ;; Move over post assets
-          (dolist (asset (hyde/hyde-get-post-assets (concat dir "/" post-file-name)))
-            (progn
-              (message (concat "Asset is : " asset))
-              (hyde/hyde-rename-file asset 
-                                     (format "%s%s" hyde-home
-                                             (replace-regexp-in-string "_drafts" "" asset)))))
-          ;; Move over the actual post
-          (hyde/hyde-rename-file (concat dir "/" post-file-name)
-                                 (concat hyde-posts-dir "/" post-file-name))))
-    (hyde/vc-commit hyde-home
-                    '()
-                    (concat "Promoting " post-file-name))
-    (hyde/load-posts)))
+	(post-file-name (nth 1 (split-string (strip-string (thing-at-point 'line)) " : ")))
+	(dir (get-text-property pos 'dir))
+        )
+    (cond ((equal dir hyde-drafts-dir)
+           (setq temp-target-dir hyde-posts-dir))
+          ((equal dir hyde-posts-dir)
+           (setq temp-target-dir hyde-drafts-dir))
+          (t (message "You seem to have missed an actual post, aim better, please!")
+             (setq temp-target-dir nil))   
+          )
+    (when temp-target-dir
 
+      ;; Move over post assets
+      (dolist (asset (hyde/hyde-get-post-assets (concat dir "/" post-file-name)))
+        (progn
+          (message (concat "Asset is : " asset))
+          (hyde/hyde-rename-file asset 
+                                 (format "%s%s" hyde-home
+                                         (replace-regexp-in-string dir "" asset)))))
+
+      ;; Move over the actual post
+      (hyde/hyde-rename-file (concat dir "/" post-file-name)
+                             (concat temp-target-dir "/" post-file-name))
+
+      (hyde/vc-commit hyde-home
+                      '()
+                      (concat "Promoting " post-file-name))        
+      (hyde/load-posts)
+      )
+  ))
 
 (defun hyde/open-post-maybe (pos)
   "Opens the post under cursor in the editor"
@@ -357,8 +366,8 @@ user"
     (define-key hyde-mode-map (kbd "s") 'hyde/serve)
     (define-key hyde-mode-map (kbd "k") 'hyde/stop-serve)
     (define-key hyde-mode-map (kbd "d") 'hyde/deploy)
-    (define-key hyde-mode-map (kbd "p") 'hyde/promote-to-post)
-    (define-key hyde-mode-map (kbd "q") 'hyde/quit)
+    (define-key hyde-mode-map (kbd "p") 'hyde/prodemote-to-post)
+    (define-key hyde-mode-map (kbd "q") 'hyde/quit)    
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
     hyde-mode-map)
   "Keymap for Hyde")
