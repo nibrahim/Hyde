@@ -261,7 +261,7 @@ properly and returns them so that they can be presented to the
 user"
   (let* (
          (posts-dir (concat (expand-file-name hyde-home) "/" dir))
-         (posts (directory-files posts-dir nil ".*markdown" nil)))
+         (posts (directory-files posts-dir nil ".*md\\|.*markdown" nil)))
     (map 'list (lambda (f) (format "%s : %s" (hyde/file-status dir f) f)) posts)))
 
 (defun hyde/hyde-get-post-assets (post)
