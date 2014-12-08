@@ -40,7 +40,7 @@ it up to date.
 It's tailored to the way I work. I keep my posts in a `git` repository
 (although I do have a crude DVCS abstraction layer if you're using
 `hg` or any other such system). I make changes, commit them and push
-the repository to `github` (you can, for example, see this files
+the repository to `github` (you can, for example, see this file's
 source at
 [github](https://github.com/nibrahim/nibrahim.net.in/blob/master/_posts/2010-11-11-hyde_%3A_an_emacs_mode_for_jekyll_blogs.markdown)).
 After that, I make the site using `jekyll` manually and then copy it
