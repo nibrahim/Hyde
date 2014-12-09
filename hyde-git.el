@@ -53,6 +53,11 @@
   (let ((cmd (format "cd '%s' && git add '%s' > /dev/null" (expand-file-name repo) file)))
     (shell-command cmd)))
 
+(defun hyde/git/delete (repo file)
+  "Deletes a given file from the repository"
+  (let ((cmd (format "cd '%s' && git rm '%s' > /dev/null" (expand-file-name repo) file)))
+    (shell-command cmd)))
+
 (defun hyde/git/commit (repo files commit-message)
   "Commits the given files to the repository"
   (if files

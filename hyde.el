@@ -152,6 +152,7 @@
 (defalias 'hyde/vc-commit  'hyde/git/commit "Command to add a file to the DVCS")
 (defalias 'hyde/vc-push  'hyde/git/push "Command to push the repository")
 (defalias 'hyde/vc-rename  'hyde/git/rename "Command to rename files")
+(defalias 'hyde/vc-delete 'hyde/git/delete "Command to delete file from the DVCS")
 
 (defun hyde/hyde-file-local-uncommitted-changed (dir file)
   "Return whether the given file in the given dir is uncommitted"
@@ -168,6 +169,15 @@
 (defun hyde/hyde-add-file (file)
   "Stages the given file for commit."
   (hyde/vc-add (concat hyde-home "/" hyde-posts-dir) file))
+
+(defun hyde/hyde-delete-file (dir file)
+  "Deletes the given version controlled file"
+  (let* (
+         (post-file-name (strip-string (concat dir "/" file)))
+         (file-buffer (get-file-buffer (concat hyde-home "/" post-file-name)))
+         )
+    (if file-buffer (kill-buffer file-buffer))
+    (hyde/vc-delete hyde-home post-file-name)))
 
 (defun hyde/hyde-rename-file (from to)
   "Renames the given version controlled file from to to"
@@ -339,6 +349,18 @@ user"
      ;; hyde-home not available in markdown buffer (FIXME)
     (hyde-markdown-activate-mode hyde-buffer)))
 
+(defun hyde/delete-post (pos)
+  (interactive "d")
+  (let* (
+         (post-file-name (nth
+                          1
+                          (split-string (strip-string (thing-at-point 'line)) " : ")))
+         (dir (get-text-property pos 'dir))
+         )
+    (hyde/hyde-delete-file dir post-file-name)
+    (hyde/vc-commit hyde-home '() (concat "Deleting " post-file-name))
+    (hyde/load-posts)))
+
 (defun hyde/quit ()
   "Quits hyde"
   (interactive)
@@ -357,6 +379,7 @@ user"
     (define-key hyde-mode-map (kbd "s") 'hyde/serve)
     (define-key hyde-mode-map (kbd "k") 'hyde/stop-serve)
     (define-key hyde-mode-map (kbd "d") 'hyde/deploy)
+    (define-key hyde-mode-map (kbd "D") 'hyde/delete-post)
     (define-key hyde-mode-map (kbd "p") 'hyde/promote-to-post)
     (define-key hyde-mode-map (kbd "q") 'hyde/quit)
     (define-key hyde-mode-map (kbd "RET") 'hyde/open-post-maybe)
@@ -371,6 +394,7 @@ user"
     ["Open post" hyde/open-post-maybe t]
     ["Commit post" hyde/hyde-commit-post t]
     ["Promote post" hyde/promote-to-post t]
+    ["Delete post" hyde/delete-post t]
     "---"
     ["Refresh" hyde/load-posts t]
     ["Run Jekyll" hyde/run-jekyll t]
