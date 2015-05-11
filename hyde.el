@@ -29,6 +29,12 @@
   "Hyde version")
 
 ;; Internal customisable variables
+(defcustom hyde-custom-params
+  nil
+  "Params which will be added to each new post"
+  :type 'list
+  :group 'hyde)
+
 (defcustom hyde-mode-hook nil
   "Hook called by \"hyde-mode\""
   :type 'hook
@@ -59,7 +65,6 @@
   "Directory which contains images embedded on the blog"
   :type 'string
   :group 'hyde)
-
 
 (defcustom hyde/jekyll-command
   "jekyll"
@@ -341,6 +346,10 @@ user"
       (insert "layout: post\n")
       (insert (format "title: \"%s\"\n" title))
       (insert (format "date: \"%s\"\n" (format-time-string "%Y-%m-%d %H:%M:%S %z")))
+      (dolist (l hyde-custom-params)
+	(insert (format "%s: %s\n"
+			(first l)
+			(eval (second l)))))
       (insert "---\n\n")
       (save-buffer))
     (hyde/hyde-add-file post-file-name)
