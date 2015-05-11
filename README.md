@@ -54,6 +54,7 @@ Following are the variables affecting your blog and its management that you can 
 
 <dl>
   <dt><code>hyde-home</code></dt><dd>The default root directory of your blog</dd>
+  <dt><code>hyde-custom-params</code></dt><dd>Custom params which will be added to each new post such as tags, category, cover etc.</dd>
   <dt><code>hyde-deploy-dir</code></dt><dd>The directory where <code>jekyll</code> will generate the site for you to deploy</dd>
   <dt><code>hyde-posts-dir</code></dt><dd>The directory that will contain the actual posts (this is relative to <code>hyde-home</code> and is <code>_posts</code> by default).</dd>
   <dt><code>hyde-drafts-dir</code></dt><dd>The directory that will contain the post drafts (this is relative to <code>hyde-home</code> and is <code>_drafts</code> by default. You might want to _ignore_ this directory in <code>_config.yml</code> ).</dd>
