@@ -451,7 +451,7 @@ user"
 (defun hyde/read-config (hyde-home)
   "Loads up the config file to set the blog deployment and other information"
   (let (
-	(config-file (concat hyde-home "/.hyde.el"))
+	(config-file (expand-file-name ".hyde.el" hyde-home))
 	)
     (if (not (file-exists-p config-file))
         (error (format "Config file '%s' is missing. Won't continue" config-file)))
@@ -463,7 +463,7 @@ user"
   "Create expected directories if they don't exist"
   (let
       (
-       (drafts-dir (concat home "/" hyde-drafts-dir))
+       (drafts-dir (expand-file-name hyde-drafts-dir home))
        )
     (if (not (file-exists-p drafts-dir))
         (make-directory drafts-dir t))))
