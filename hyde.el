@@ -506,14 +506,20 @@ user"
 
 
 ;; Entry point
-(defun hyde (home)
+(defun hyde (&optional home)
   "Enters hyde mode"
-  (interactive "DBlog : ")
-  (let (
-	(hyde-buffer (concat "*Hyde : " home "*"))
-	)
-    (switch-to-buffer (get-buffer-create hyde-buffer)))
-  (hyde/hyde-mode home))
+  (interactive)
+  (let* (
+         (jekyll-root (or home
+                          (hyde/ask-for-jekyll-root)))
+         (hyde-buffer (concat "*Hyde:" jekyll-root "*"))
+         )
+    (switch-to-buffer (get-buffer-create hyde-buffer))
+    (hyde/hyde-mode jekyll-root)))
+
+(defun hyde/ask-for-jekyll-root ()
+  (or (vc-find-root (buffer-file-name) "_config.yml")
+      (read-directory-name "Jekyll root: ")))
 
 (provide 'hyde)
 
