@@ -465,8 +465,9 @@ user"
       (
        (drafts-dir (expand-file-name hyde-drafts-dir home))
        )
-    (if (not (file-exists-p drafts-dir))
-        (make-directory drafts-dir t))))
+    (if (and (not (file-exists-p drafts-dir))
+             (yes-or-no-p (format "%s doesn't exist; create it? " drafts-dir)))
+             (make-directory drafts-dir t))))
 
 (defun hyde/hyde-mode (home)
   "The Hyde major mode to edit Jekyll posts.
