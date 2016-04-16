@@ -311,7 +311,7 @@ user"
                                              (replace-regexp-in-string "_drafts" "" asset)))))
           ;; Move over the actual post
           (hyde/hyde-rename-file (concat dir "/" post-file-name)
-                                 (concat hyde-posts-dir "/" post-file-name))))
+                                 (concat hyde-posts-dir "/" (format-time-string "%Y-%m-%d-") post-file-name))))
     (hyde/vc-commit hyde-home
                     '()
                     (concat "Promoting " post-file-name))
@@ -337,7 +337,6 @@ user"
   (interactive "MEnter post title: ")
   (let ((post-file-name (expand-file-name (format "%s/%s/%s.markdown" 
                                                   hyde-home hyde-drafts-dir (concat 
-                                                                             (format-time-string "%Y-%m-%d-")
                                                                              (downcase (replace-regexp-in-string " " "_" title))))))
         (hyde-buffer (current-buffer)))
     (save-excursion
