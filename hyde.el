@@ -344,7 +344,6 @@ user"
       (insert "---\n")
       (insert "layout: post\n")
       (insert (format "title: \"%s\"\n" title))
-      (insert (format "date: \"%s\"\n" (format-time-string "%Y-%m-%d %H:%M:%S %z")))
       (dolist (l hyde-custom-params)
 	(insert (format "%s: %s\n"
 			(first l)
