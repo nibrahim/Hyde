@@ -149,6 +149,8 @@
    )
   "Font lock keywords for Hyde mode")
 
+(defvar hyde-home nil)
+
 ;; Version control abstraction
 (defalias 'hyde/vc-uncommittedp 'hyde/git/uncommittedp "Command to check whether a file has uncommitted changes")
 (defalias 'hyde/vc-unpushedp 'hyde/git/unpushedp "Command to check whether a file has unpushed changes")
