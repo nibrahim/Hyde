@@ -23,6 +23,7 @@
 (require 'hyde-git)
 (require 'hyde-md)
 (require 'easymenu)
+(require 'cl)
 
 ;; Constants for internal use
 (defconst hyde/hyde-version "0.3a"
