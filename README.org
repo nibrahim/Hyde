@@ -2,3 +2,4 @@ An Emacs major mode to work with the [[http://jekyllrb.com][Jekyll]] blogging sy
 
 GPL Licensed
 
+-- Developer: Noufal Ibrahim ---
